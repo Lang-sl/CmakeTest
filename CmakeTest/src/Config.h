@@ -5,7 +5,7 @@
 #define GAME_HEIGHT 900 //Window Height
 #define GAME_TITLE "CADDemo"
 #define GAME_RES_PATH "./plane.rcc"
-#define GAME_ICON ":/res/app.ico"
+#define GAME_ICON "../res/app.ico"
 
 #define MAP_PATH ":/res/img_bg_level_1.jpg"
 #define MAP_SCROLL_SPEED 2
