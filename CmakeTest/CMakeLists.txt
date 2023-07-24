@@ -8,9 +8,10 @@ set(CMAKE_AUTORCC ON)
 # moc
 set(CMAKE_AUTOMOC ON)
 
+set(SRC_DIR D:/gitTest/CmakeTest/src)
+aux_source_directory(${SRC_DIR} SRC_LIST)
 
-add_executable(${PROJECT_NAME} WIN32
-"main.cpp" "CmakeTest.ui" "CmakeTest.h" "CmakeTest.cpp" "NavigationDock.h" "NavigationDock.cpp" "Config.h" "GLWidget.h" "GLWidget.cpp" "TimeThread.h" "TimeThread.cpp" "TcpClient.h" "TcpClient.cpp" "CmakeTest.qrc")
+add_executable(${PROJECT_NAME} WIN32 ${SRC_LIST})
 
 find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)
 
