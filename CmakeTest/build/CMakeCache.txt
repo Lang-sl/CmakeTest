@@ -206,8 +206,8 @@ Qt5Network_DIR:PATH=D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Network
 //The directory containing a CMake configuration file for Qt5Widgets.
 Qt5Widgets_DIR:PATH=D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Widgets
 
-//The directory containing a CMake configuration file for Qt5.
-Qt5_DIR:PATH=D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5
+//No help, variable specified on the command line.
+Qt5_DIR:UNINITIALIZED=D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5
 
 
 ########################

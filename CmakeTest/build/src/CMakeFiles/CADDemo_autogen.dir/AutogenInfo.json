@@ -47,12 +47,8 @@
 		"D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Gui/Qt5GuiConfig.cmake",
 		"D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Network/Qt5NetworkConfigVersion.cmake",
 		"D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Network/Qt5NetworkConfig.cmake",
-<<<<<<< HEAD
 		"D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Network/Qt5Network_QGenericEnginePlugin.cmake",
 		"D:/gitTest/CmakeTest/src/CmakeTest.qrc"
-=======
-		"D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Network/Qt5Network_QGenericEnginePlugin.cmake"
->>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
 	],
 	"CMAKE_SOURCE_DIR" : "D:/gitTest/CmakeTest",
 	"DEP_FILE" : "",
@@ -66,15 +62,12 @@
 			null
 		],
 		[
-<<<<<<< HEAD
 			"D:/gitTest/CmakeTest/src/Config.h",
 			"MU",
 			"EWIEGA46WW/moc_Config.cpp",
 			null
 		],
 		[
-=======
->>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
 			"D:/gitTest/CmakeTest/src/GLWidget.h",
 			"MU",
 			"EWIEGA46WW/moc_GLWidget.cpp",
