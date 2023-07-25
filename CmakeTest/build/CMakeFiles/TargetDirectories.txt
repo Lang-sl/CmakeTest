@@ -1,0 +1,4 @@
+D:/gitTest/CmakeTest/build/CMakeFiles/ALL_BUILD.dir
+D:/gitTest/CmakeTest/build/CMakeFiles/ZERO_CHECK.dir
+D:/gitTest/CmakeTest/build/src/CMakeFiles/CADDemo.dir
+D:/gitTest/CmakeTest/build/src/CMakeFiles/ALL_BUILD.dir
