@@ -36,4 +36,7 @@ D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigVersion.cmake
 D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Widgets/Qt5WidgetsMacros.cmake
 D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5Widgets/Qt5Widgets_QWindowsVistaStylePlugin.cmake
 D:/gitTest/CmakeTest/src/CMakeLists.txt
+<<<<<<< HEAD
 D:/gitTest/CmakeTest/src/CmakeTest.qrc
+=======
+>>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19

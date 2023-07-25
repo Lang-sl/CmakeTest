@@ -22,9 +22,12 @@
     <ClCompile Include="D:\gitTest\CmakeTest\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="D:\gitTest\CmakeTest\build\src\CADDemo_autogen\EWIEGA46WW\qrc_CmakeTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+=======
+>>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
     <ClCompile Include="D:\gitTest\CmakeTest\build\src\CADDemo_autogen\mocs_compilation_Release.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,6 +39,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <ClInclude Include="D:\gitTest\CmakeTest\src\CmakeTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -72,6 +76,11 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{A0C0DE6D-C002-38A5-9A08-204182792AE1}</UniqueIdentifier>
     </Filter>
+=======
+    <CustomBuild Include="D:\gitTest\CmakeTest\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+>>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
     <Filter Include="Source Files">
       <UniqueIdentifier>{4C7EA499-8F45-3429-A5C6-B34F06535144}</UniqueIdentifier>
     </Filter>

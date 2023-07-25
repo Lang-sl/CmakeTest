@@ -8,14 +8,10 @@ set(CMAKE_AUTORCC ON)
 # moc
 set(CMAKE_AUTOMOC ON)
 
-<<<<<<< HEAD
-file(GLOB SRC_LIST ./*.cpp ./*.qrc ./*.h ./*.ui)
-=======
 aux_source_directory(./ SRC_LIST)
->>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
 set(APP_NAME_1 CADDemo)
-# set(EXECUTABLE_OUTPUT_PATH ${EXEC_PATH})
-add_executable(${APP_NAME_1} WIN32 ${SRC_LIST})
+
+add_executable(${PROJECT_NAME} WIN32 ${SRC_LIST})
 
 find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)
 

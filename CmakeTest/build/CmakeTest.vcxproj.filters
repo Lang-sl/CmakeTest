@@ -22,9 +22,12 @@
     <ClCompile Include="D:\gitTest\CmakeTest\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="D:\gitTest\CmakeTest\build\CmakeTest_autogen\UVLADIE3JM\qrc_CmakeTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+=======
+>>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
     <ClCompile Include="D:\gitTest\CmakeTest\build\CmakeTest_autogen\mocs_compilation_Release.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,6 +39,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <CustomBuild Include="D:\gitTest\CmakeTest\build\CMakeFiles\b5cd497b8e2737e008e91fd2571dca05\qrc_CmakeTest.cpp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
@@ -48,6 +52,11 @@
     <Filter Include="CMake Rules">
       <UniqueIdentifier>{7A71DDCE-6946-3519-957E-4BC1F065EE07}</UniqueIdentifier>
     </Filter>
+=======
+    <CustomBuild Include="D:\gitTest\CmakeTest\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+>>>>>>> e1e17e81a8069124b36b7c9409cc5ff7d998cf19
     <Filter Include="Source Files">
       <UniqueIdentifier>{4C7EA499-8F45-3429-A5C6-B34F06535144}</UniqueIdentifier>
     </Filter>
