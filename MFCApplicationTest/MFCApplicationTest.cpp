@@ -9,6 +9,9 @@
 #include "qmfcapp.h"
 #include "MainUI.h"
 
+#include "untitleddll.h"
+#pragma comment(lib,"untitledDLL.lib")
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -43,11 +46,13 @@ CMFCApplicationTestApp theApp;
 BOOL CMFCApplicationTestApp::InitInstance()
 {
 	CWinApp::InitInstance();
-	QMfcApp::instance(this);
+	/*QMfcApp::instance(this);
 	
 	MainUI ui;
 	ui.show();
-	QMfcApp::exec();
+	QMfcApp::exec();*/
+
+	testFormUI(0, 0);
 	return FALSE;
 }
 
