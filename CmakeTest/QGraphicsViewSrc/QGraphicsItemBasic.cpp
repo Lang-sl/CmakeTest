@@ -8,7 +8,7 @@
 QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType type)
     : m_center(center), m_edge(edge), m_type(type)
 {
-    m_pen_noSelected.setColor(QColor(0, 160, 230));
+    m_pen_noSelected.setColor(QColor(248, 248, 255));
     m_pen_noSelected.setWidth(2);
     m_pen_isSelected.setColor(QColor(255, 0, 255));
     m_pen_isSelected.setWidth(2);
@@ -41,6 +41,9 @@ BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
     m_pointList.append(point);
     m_pointList.append(new BPointItem(this, m_center, BPointItem::Center));
     m_pointList.setRandColor();*/
+
+    setAcceptDrops(true);
+    color = Qt::gray;
 }
 
 QRectF BEllipse::boundingRect() const
@@ -53,7 +56,7 @@ void BEllipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(this->brush());
+    painter->setBrush(dragOver ? color.lighter(130) : color);
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
     painter->drawEllipse(ret);
@@ -65,10 +68,16 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         return;
 
     QMenu* menu = new QMenu();
-    menu->setStyleSheet("QMenu { background-color:rgb(89,87,87); border: 5px solid rgb(235,110,36); }");
+    menu->setStyleSheet("QMenu { background-color: rgb(220, 220, 220); border: 1px solid rgb(150, 150, 150); border-radius: 5px; }"
+        "QMenu::item { padding: 8px 20px; }"
+        "QMenu::item:selected { background-color: rgb(100, 180, 255); color: white; }");
 
     QSpinBox* width_spinBox = new QSpinBox(menu);
-    width_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
+    width_spinBox->setStyleSheet("QSpinBox { width: 100px; height: 30px; font-size: 14px; font-weight: normal; border-radius: 5px; background-color: rgb(240, 240, 240); border: 1px solid rgb(150, 150, 150); color: rgb(70, 70, 70); }"
+        "QSpinBox::up-button, QSpinBox::down-button { width: 30px; height: 15px; }"
+        "QSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; }"
+        "QSpinBox::up-button:pressed, QSpinBox::down-button:pressed { background-color: rgb(180, 180, 180); }");
     width_spinBox->setRange(0, 1000);
     width_spinBox->setPrefix("w: ");
     width_spinBox->setSuffix(" mm");
@@ -88,7 +97,11 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         });
 
     QSpinBox* height__spinBox = new QSpinBox(menu);
-    height__spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
+    height__spinBox->setStyleSheet("QSpinBox { width: 100px; height: 30px; font-size: 14px; font-weight: normal; border-radius: 5px; background-color: rgb(240, 240, 240); border: 1px solid rgb(150, 150, 150); color: rgb(70, 70, 70); }"
+        "QSpinBox::up-button, QSpinBox::down-button { width: 30px; height: 15px; }"
+        "QSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; }"
+        "QSpinBox::up-button:pressed, QSpinBox::down-button:pressed { background-color: rgb(180, 180, 180); }");
     height__spinBox->setRange(0, 1000);
     height__spinBox->setPrefix("h: ");
     height__spinBox->setSuffix(" mm");
@@ -121,11 +134,40 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
     QGraphicsItem::contextMenuEvent(event);
 }
 
+void BEllipse::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
+{
+    if (event->mimeData()->hasColor()) {
+        event->setAccepted(true);
+        dragOver = true;
+        update();
+    }
+    else {
+        event->setAccepted(false);
+    }
+}
+
+void BEllipse::dragLeaveEvent(QGraphicsSceneDragDropEvent* event)
+{
+    Q_UNUSED(event);
+    dragOver = false;
+    update();
+}
+
+void BEllipse::dropEvent(QGraphicsSceneDragDropEvent* event)
+{
+    dragOver = false;
+    if (event->mimeData()->hasColor())
+        color = qvariant_cast<QColor>(event->mimeData()->colorData());
+    update();
+}
+
 //------------------------------------------------------------------------------
 
 BCircle::BCircle(qreal x, qreal y, qreal radius, ItemType type)
     : BEllipse(x, y, radius* sqrt(2), radius* sqrt(2), type)
 {
+    setAcceptDrops(true);
+    setColor(Qt::gray);
     updateRadius();
 }
 
@@ -144,7 +186,7 @@ void BCircle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(this->brush());
+    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
     painter->drawEllipse(ret);
@@ -156,10 +198,16 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         return;
 
     QMenu* menu = new QMenu();
-    menu->setStyleSheet("QMenu { background-color:rgb(89,87,87); border: 5px solid rgb(235,110,36); }");
+    menu->setStyleSheet("QMenu { background-color: rgb(220, 220, 220); border: 1px solid rgb(150, 150, 150); border-radius: 5px; }"
+        "QMenu::item { padding: 8px 20px; }"
+        "QMenu::item:selected { background-color: rgb(100, 180, 255); color: white; }");
 
     QSpinBox* radius_spinBox = new QSpinBox(menu);
-    radius_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
+    radius_spinBox->setStyleSheet("QSpinBox { width: 100px; height: 30px; font-size: 14px; font-weight: normal; border-radius: 5px; background-color: rgb(240, 240, 240); border: 1px solid rgb(150, 150, 150); color: rgb(70, 70, 70); }"
+        "QSpinBox::up-button, QSpinBox::down-button { width: 30px; height: 15px; }"
+        "QSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; }"
+        "QSpinBox::up-button:pressed, QSpinBox::down-button:pressed { background-color: rgb(180, 180, 180); }");
     radius_spinBox->setRange(0, 1000);
     radius_spinBox->setPrefix("r: ");
     radius_spinBox->setSuffix(" mm");
@@ -200,227 +248,6 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 //------------------------------------------------------------------------------
 
-BConcentricCircle::BConcentricCircle(qreal x, qreal y, qreal radius1, qreal radius2, ItemType type)
-    : BCircle(x, y, radius1, type), m_another_edge(x + radius2 * sqrt(2) / 2, y + radius2 * sqrt(2) / 2)
-{
-    /*BPointItem* point = new BPointItem(this, m_another_edge, BPointItem::Special);
-    point->setParentItem(this);
-    m_pointList.append(point);
-    m_pointList.setRandColor();*/
-
-    updateOtherRadius();
-}
-
-void BConcentricCircle::updateOtherRadius()
-{
-    m_another_radius = sqrt(pow(m_center.x() - m_another_edge.x(), 2) +
-        pow(m_center.y() - m_another_edge.y(), 2));
-}
-
-void BConcentricCircle::setAnotherEdge(QPointF p)
-{
-    m_another_edge = p;
-}
-
-QRectF BConcentricCircle::boundingRect() const
-{
-    qreal temp = m_radius > m_another_radius ? m_radius : m_another_radius;
-    return QRectF(m_center.x() - temp, m_center.y() - temp, temp * 2, temp * 2);
-}
-
-void BConcentricCircle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    painter->setPen(this->pen());
-    painter->setBrush(this->brush());
-
-    QRectF ret(m_center.x() - m_another_radius, m_center.y() - m_another_radius, m_another_radius * 2, m_another_radius * 2);
-    painter->drawEllipse(ret);
-
-    BCircle::paint(painter, option, widget);
-}
-
-void BConcentricCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
-{
-    if (!this->isSelected())
-        return;
-
-    QMenu* menu = new QMenu();
-    menu->setStyleSheet("QMenu { background-color:rgb(89,87,87); border: 5px solid rgb(235,110,36); }");
-
-    QSpinBox* radius_spinBox = new QSpinBox(menu);
-    radius_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
-    radius_spinBox->setRange(0, 1000);
-    radius_spinBox->setPrefix("r1: ");
-    radius_spinBox->setSuffix(" mm");
-    radius_spinBox->setSingleStep(1);
-    radius_spinBox->setValue(m_radius);
-    connect(radius_spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=](int v) {
-        m_radius = v;
-
-        if (m_edge.x() < 0) {
-            m_edge.setX(m_center.x() - m_radius * sqrt(2) / 2);
-        }
-        else {
-            m_edge.setX(m_center.x() + m_radius * sqrt(2) / 2);
-        }
-
-        if (m_edge.y() < 0) {
-            m_edge.setY(m_center.y() - m_radius * sqrt(2) / 2);
-        }
-        else {
-            m_edge.setY(m_center.y() + m_radius * sqrt(2) / 2);
-        }
-
-        //m_pointList.at(0)->setPoint(m_edge);
-        this->hide();
-        this->update();
-        this->show();
-        });
-
-    QSpinBox* another_radius_spinBox = new QSpinBox(menu);
-    another_radius_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
-    another_radius_spinBox->setRange(0, 1000);
-    another_radius_spinBox->setPrefix("r2: ");
-    another_radius_spinBox->setSuffix(" mm");
-    another_radius_spinBox->setSingleStep(1);
-    another_radius_spinBox->setValue(m_another_radius);
-    connect(another_radius_spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=](int v) {
-        m_another_radius = v;
-
-        if (m_another_edge.x() < 0) {
-            m_another_edge.setX(m_center.x() - m_another_radius * sqrt(2) / 2);
-        }
-        else {
-            m_another_edge.setX(m_center.x() + m_another_radius * sqrt(2) / 2);
-        }
-
-        if (m_another_edge.y() < 0) {
-            m_another_edge.setY(m_center.y() - m_another_radius * sqrt(2) / 2);
-        }
-        else {
-            m_another_edge.setY(m_center.y() + m_another_radius * sqrt(2) / 2);
-        }
-
-        //m_pointList.at(2)->setPoint(m_another_edge);
-        this->hide();
-        this->update();
-        this->show();
-        });
-
-    QWidgetAction* radius_widgetAction = new QWidgetAction(menu);
-    radius_widgetAction->setDefaultWidget(radius_spinBox);
-    menu->addAction(radius_widgetAction);
-
-    QWidgetAction* another_radius_widgetAction = new QWidgetAction(menu);
-    another_radius_widgetAction->setDefaultWidget(another_radius_spinBox);
-    menu->addAction(another_radius_widgetAction);
-
-    menu->exec(QCursor::pos());
-    delete menu;
-
-    QGraphicsItem::contextMenuEvent(event);
-}
-
-//------------------------------------------------------------------------------
-
-BPie::BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type)
-    : BCircle(x, y, radius, type), m_angle(angle)
-{
-    if ((angle >= 0 && angle < 90) || (angle >= 270 && angle < 360))
-    {
-        m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
-        m_edge.setY(m_center.y() + radius * sin(angle / 180 * PI) * (-1));
-    }
-    else if ((angle >= 90 && angle < 270))
-    {
-        m_edge.setY(m_center.y() + radius * sin(angle / 180 * PI) * (-1));
-        m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
-    }
-
-    //m_pointList.at(0)->setPoint(m_edge);
-    m_radius = radius;
-}
-
-void BPie::updateAngle()
-{
-    qreal dx = m_edge.x() - m_center.x();
-    qreal dy = m_edge.y() - m_center.y();
-
-    if (dx >= 0 && dy < 0)
-    {
-        m_angle = atan2((-1) * (dy), dx) * 180 / PI;
-    }
-    else if (dx < 0 && dy < 0)
-    {
-        m_angle = atan2((-1) * dy, dx) * 180 / PI;
-    }
-    else if (dx < 0 && dy >= 0)
-    {
-        m_angle = 360 + atan2((-1) * dy, dx) * 180 / PI;
-    }
-    else if (dx >= 0 && dy >= 0)
-    {
-        m_angle = 360 - atan2(dy, dx) * 180 / PI;
-    }
-}
-
-void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(this->pen());
-    painter->setBrush(this->brush());
-
-    QRectF ret(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
-    painter->drawPie(ret, 16 * 0, 16 * (m_angle));
-}
-
-//------------------------------------------------------------------------------
-
-BChord::BChord(qreal x, qreal y, qreal radius, qreal angle, ItemType type)
-    : BPie(x, y, radius, angle, type)
-{
-    updateEndAngle();
-}
-
-void BChord::updateEndAngle()
-{
-    qreal dx = m_edge.x() - m_center.x();
-    qreal dy = m_edge.y() - m_center.y();
-
-    if (dx >= 0 && dy < 0)
-    {
-        m_angle = atan2((-1) * (dy), dx) * 180 / PI;
-    }
-    else if (dx < 0 && dy < 0)
-    {
-        m_angle = 180 - atan2((-1) * dy, dx) * 180 / PI;
-    }
-    else if (dx < 0 && dy >= 0)
-    {
-        m_angle = 360 + atan2((-1) * dy, dx) * 180 / PI;
-    }
-    else if (dx >= 0 && dy >= 0)
-    {
-        m_angle = atan2((-1) * dy, dx) * 180 / PI;
-    }
-
-    m_end_angle = 180 - m_angle * 2;
-}
-
-void BChord::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(this->pen());
-    painter->setBrush(this->brush());
-
-    QRectF ret(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
-    painter->drawChord(ret, 16 * (m_angle), 16 * (m_end_angle));
-}
-
-//------------------------------------------------------------------------------
-
 BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType type)
     : QGraphicsItemBasic(QPointF(x, y), QPointF(width / 2, height / 2), type)
 {
@@ -429,6 +256,8 @@ BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType typ
     m_pointList.append(point);
     m_pointList.append(new BPointItem(this, m_center, BPointItem::Center));
     m_pointList.setRandColor();*/
+    setAcceptDrops(true);
+    color = Qt::gray;
 }
 
 QRectF BRectangle::boundingRect() const
@@ -441,7 +270,7 @@ void BRectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(this->brush());
+    painter->setBrush(dragOver ? color.lighter(130) : color);
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
     painter->drawRect(ret);
@@ -453,10 +282,16 @@ void BRectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         return;
 
     QMenu* menu = new QMenu();
-    menu->setStyleSheet("QMenu { background-color:rgb(89,87,87); border: 5px solid rgb(235,110,36); }");
+    menu->setStyleSheet("QMenu { background-color: rgb(220, 220, 220); border: 1px solid rgb(150, 150, 150); border-radius: 5px; }"
+        "QMenu::item { padding: 8px 20px; }"
+        "QMenu::item:selected { background-color: rgb(100, 180, 255); color: white; }");
 
     QSpinBox* width_spinBox = new QSpinBox(menu);
-    width_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
+    width_spinBox->setStyleSheet("QSpinBox { width: 100px; height: 30px; font-size: 14px; font-weight: normal; border-radius: 5px; background-color: rgb(240, 240, 240); border: 1px solid rgb(150, 150, 150); color: rgb(70, 70, 70); }"
+        "QSpinBox::up-button, QSpinBox::down-button { width: 30px; height: 15px; }"
+        "QSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; }"
+        "QSpinBox::up-button:pressed, QSpinBox::down-button:pressed { background-color: rgb(180, 180, 180); }");
     width_spinBox->setRange(0, 1000);
     width_spinBox->setPrefix("w: ");
     width_spinBox->setSuffix(" mm");
@@ -476,7 +311,11 @@ void BRectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         });
 
     QSpinBox* height__spinBox = new QSpinBox(menu);
-    height__spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
+    height__spinBox->setStyleSheet("QSpinBox { width: 100px; height: 30px; font-size: 14px; font-weight: normal; border-radius: 5px; background-color: rgb(240, 240, 240); border: 1px solid rgb(150, 150, 150); color: rgb(70, 70, 70); }"
+        "QSpinBox::up-button, QSpinBox::down-button { width: 30px; height: 15px; }"
+        "QSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; }"
+        "QSpinBox::up-button:pressed, QSpinBox::down-button:pressed { background-color: rgb(180, 180, 180); }");
     height__spinBox->setRange(0, 1000);
     height__spinBox->setPrefix("h: ");
     height__spinBox->setSuffix(" mm");
@@ -509,6 +348,33 @@ void BRectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
     QGraphicsItem::contextMenuEvent(event);
 }
 
+void BRectangle::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
+{
+    if (event->mimeData()->hasColor()) {
+        event->setAccepted(true);
+        dragOver = true;
+        update();
+    }
+    else {
+        event->setAccepted(false);
+    }
+}
+
+void BRectangle::dragLeaveEvent(QGraphicsSceneDragDropEvent* event)
+{
+    Q_UNUSED(event);
+    dragOver = false;
+    update();
+}
+
+void BRectangle::dropEvent(QGraphicsSceneDragDropEvent* event)
+{
+    dragOver = false;
+    if (event->mimeData()->hasColor())
+        color = qvariant_cast<QColor>(event->mimeData()->colorData());
+    update();
+}
+
 //------------------------------------------------------------------------------
 
 BSquare::BSquare(qreal x, qreal y, qreal width, ItemType type)
@@ -520,10 +386,16 @@ void BSquare::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         return;
 
     QMenu* menu = new QMenu();
-    menu->setStyleSheet("QMenu { background-color:rgb(89,87,87); border: 5px solid rgb(235,110,36); }");
+    menu->setStyleSheet("QMenu { background-color: rgb(220, 220, 220); border: 1px solid rgb(150, 150, 150); border-radius: 5px; }"
+        "QMenu::item { padding: 8px 20px; }"
+        "QMenu::item:selected { background-color: rgb(100, 180, 255); color: white; }");
 
     QSpinBox* distance_spinBox = new QSpinBox(menu);
-    distance_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
+    distance_spinBox->setStyleSheet("QSpinBox { width: 100px; height: 30px; font-size: 14px; font-weight: normal; border-radius: 5px; background-color: rgb(240, 240, 240); border: 1px solid rgb(150, 150, 150); color: rgb(70, 70, 70); }"
+        "QSpinBox::up-button, QSpinBox::down-button { width: 30px; height: 15px; }"
+        "QSpinBox::up-button { subcontrol-origin: border; subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; }"
+        "QSpinBox::up-button:pressed, QSpinBox::down-button:pressed { background-color: rgb(180, 180, 180); }");
     distance_spinBox->setRange(0, 1000);
     distance_spinBox->setPrefix("d: ");
     distance_spinBox->setSuffix(" mm");
@@ -664,265 +536,28 @@ void BPolygon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 
 //------------------------------------------------------------------------------
 
-BRound_End_Rectangle::BRound_End_Rectangle(qreal x, qreal y, qreal width, qreal height, ItemType type)
-    : BRectangle(x, y, width, height, type) {}
-
-QRectF BRound_End_Rectangle::boundingRect() const
-{
-    QRectF ret = QRectF(m_center.x() - m_edge.x() - m_edge.y(),
-        m_center.y() - m_edge.y(),
-        abs(m_edge.x()) * 2 + abs(m_edge.y()) * 2,
-        abs(m_edge.y()) * 2);
-
-    if (m_edge.x() >= 0 && m_edge.y() < 0)
-    {
-        ret.moveTo(m_center.x() - m_edge.x() + m_edge.y(), m_center.y() + m_edge.y());
-    }
-    else if (m_edge.x() < 0 && m_edge.y() < 0)
-    {
-        ret.moveTo(m_center.x() + m_edge.x() + m_edge.y(), m_center.y() + m_edge.y());
-    }
-    else if (m_edge.x() < 0 && m_edge.y() >= 0)
-    {
-        ret.moveTo(m_center.x() + m_edge.x() - m_edge.y(), m_center.y() - m_edge.y());
-    }
-    else if (m_edge.x() >= 0 && m_edge.y() >= 0)
-    {
-        ret.moveTo(m_center.x() - m_edge.x() - m_edge.y(), m_center.y() - m_edge.y());
-    }
-
-    return ret;
-}
-
-void BRound_End_Rectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(this->pen());
-    painter->setBrush(this->brush());
-
-    QPointF left_top, left_bottom, right_top, right_bottom;
-
-    if (m_edge.x() >= 0 && m_edge.y() < 0)
-    {
-        left_top = QPointF(m_center.x() - m_edge.x() + m_edge.y(), m_edge.y());
-        left_bottom = QPointF(m_center.x() - m_edge.x() + m_edge.y(), (-1) * m_edge.y());
-        right_top = QPointF(m_center.x() + m_edge.x() - m_edge.y(), m_edge.y());
-        right_bottom = QPointF(m_center.x() + m_edge.x() - m_edge.y(), (-1) * m_edge.y());
-    }
-    else if (m_edge.x() < 0 && m_edge.y() < 0)
-    {
-        left_top = QPointF(m_center.x() + m_edge.x() + m_edge.y(), m_edge.y());
-        left_bottom = QPointF(m_center.x() + m_edge.x() + m_edge.y(), (-1) * m_edge.y());
-        right_top = QPointF(m_center.x() - m_edge.x() - m_edge.y(), m_edge.y());
-        right_bottom = QPointF(m_center.x() - m_edge.x() - m_edge.y(), (-1) * m_edge.y());
-    }
-    else if (m_edge.x() < 0 && m_edge.y() >= 0)
-    {
-        left_top = QPointF(m_center.x() + m_edge.x() - m_edge.y(), (-1) * m_edge.y());
-        left_bottom = QPointF(m_center.x() + m_edge.x() - m_edge.y(), m_edge.y());
-        right_top = QPointF(m_center.x() - m_edge.x() + m_edge.y(), (-1) * m_edge.y());
-        right_bottom = QPointF(m_center.x() - m_edge.x() + m_edge.y(), m_edge.y());
-    }
-    else if (m_edge.x() >= 0 && m_edge.y() >= 0)
-    {
-        left_top = QPointF(m_center.x() - m_edge.x() - m_edge.y(), (-1) * m_edge.y());
-        left_bottom = QPointF(m_center.x() - m_edge.x() - m_edge.y(), m_edge.y());
-        right_top = QPointF(m_center.x() + m_edge.x() + m_edge.y(), (-1) * m_edge.y());
-        right_bottom = QPointF(m_center.x() + m_edge.x() + m_edge.y(), m_edge.y());
-    }
-
-    int radius = abs(m_edge.y());
-    QPointF deltax(radius, 0);
-    QPointF deltay(0, radius);
-
-    painter->drawLine(left_top + deltax, right_top - deltax);
-    painter->drawLine(left_bottom + deltax, right_bottom - deltax);
-    painter->drawLine(left_top + deltay, left_bottom - deltay);
-    painter->drawLine(right_top + deltay, right_bottom - deltay);
-
-    painter->drawArc(QRectF(left_top, QSizeF(radius * 2, radius * 2)), -180 * 16, -90 * 16);
-    painter->drawArc(QRectF(left_bottom - deltay * 2, QSizeF(radius * 2, radius * 2)), -90 * 16, -90 * 16);
-    painter->drawArc(QRectF(right_top - deltax * 2, QSizeF(radius * 2, radius * 2)), 0 * 16, 90 * 16);
-    painter->drawArc(QRectF(right_bottom - deltax * 2 - deltay * 2, QSizeF(radius * 2, radius * 2)), 0 * 16, -90 * 16);
-}
-
-//------------------------------------------------------------------------------
-
-BRounded_Rectangle::BRounded_Rectangle(qreal x, qreal y, qreal width, qreal height, ItemType type)
-    : BRectangle(x, y, width, height, type)
-{
-    m_another_edge.setX(m_edge.x());
-    m_another_edge.setY((-1) * m_edge.y());
-
-    /*BPointItem* point = new BPointItem(this, m_another_edge, BPointItem::Special);
-    point->setParentItem(this);
-    point->setCursor(Qt::SizeAllCursor);
-    m_pointList.append(point);
-    m_pointList.setRandColor();*/
-
-    updateRadius();
-}
-
-void BRounded_Rectangle::updateRadius()
-{
-    qreal dx = 0;
-    qreal dy = 0;
-    qreal absX = abs(m_edge.x());
-    qreal absY = abs(m_edge.y());
-
-    if (m_another_edge.x() >= 0 && m_another_edge.y() < 0)
-    {
-        dx = absX - m_another_edge.x();
-        dy = absY + m_another_edge.y();
-    }
-    else if (m_another_edge.x() < 0 && m_another_edge.y() < 0)
-    {
-        dx = absX + m_another_edge.x();
-        dy = absY + m_another_edge.y();
-    }
-    else if (m_another_edge.x() < 0 && m_another_edge.y() >= 0)
-    {
-        dx = absX + m_another_edge.x();
-        dy = absY - m_another_edge.y();
-    }
-    else if (m_another_edge.x() >= 0 && m_another_edge.y() >= 0)
-    {
-        dx = absX - m_another_edge.x();
-        dy = absY - m_another_edge.y();
-    }
-
-    m_radius = dx >= dy ? dx : dy;
-}
-
-void BRounded_Rectangle::updateAnotherEdge(QPointF p)
-{
-    qreal retX = 0;
-    qreal retY = 0;
-
-    if (p.x() == m_another_edge.x()) {
-        retX = m_edge.x();
-        retY = (-1) * m_edge.y() + m_radius;
-    }
-    else {
-        retX = m_edge.x() - m_radius;
-        retY = (-1) * m_edge.y();
-    }
-
-    m_another_edge.setX(retX);
-    m_another_edge.setY(retY);
-    //m_pointList.at(2)->setPoint(m_another_edge);
-}
-
-qreal BRounded_Rectangle::getRadius()
-{
-    return m_radius;
-}
-
-QPointF BRounded_Rectangle::getAnotherEdge()
-{
-    return m_another_edge;
-}
-
-void BRounded_Rectangle::setAnotherEdge(QPointF p)
-{
-    m_another_edge = p;
-}
-
-void BRounded_Rectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(this->pen());
-    painter->setBrush(this->brush());
-
-    QRectF ret(m_center.x() - m_edge.x(), m_center.y() - m_edge.y(), m_edge.x() * 2, m_edge.y() * 2);
-    painter->drawRoundedRect(ret, m_radius, m_radius);
-}
-
-void BRounded_Rectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
-{
-    if (!this->isSelected())
-        return;
-
-    QMenu* menu = new QMenu();
-    menu->setStyleSheet("QMenu { background-color:rgb(89,87,87); border: 5px solid rgb(235,110,36); }");
-
-    QSpinBox* width_spinBox = new QSpinBox(menu);
-    width_spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
-    width_spinBox->setRange(0, 1000);
-    width_spinBox->setPrefix("w: ");
-    width_spinBox->setSuffix(" mm");
-    width_spinBox->setSingleStep(1);
-    width_spinBox->setValue(2 * abs(m_edge.x()));
-    connect(width_spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=](int v) {
-        m_another_edge.setX(m_another_edge.x() + v / 2 - m_edge.x());
-        m_edge.setX(v / 2);
-
-        //m_pointList.at(0)->setPoint(m_edge);
-        //m_pointList.at(2)->setPoint(m_another_edge);
-        this->hide();
-        this->update();
-        this->show();
-        });
-
-    QSpinBox* height__spinBox = new QSpinBox(menu);
-    height__spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
-    height__spinBox->setRange(0, 1000);
-    height__spinBox->setPrefix("h: ");
-    height__spinBox->setSuffix(" mm");
-    height__spinBox->setSingleStep(1);
-    height__spinBox->setValue(2 * abs(m_edge.y()));
-    connect(height__spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=](int v) {
-        m_another_edge.setY(m_another_edge.y() - v / 2 + m_edge.y());
-        m_edge.setY(v / 2);
-
-        //m_pointList.at(0)->setPoint(m_edge);
-        //m_pointList.at(2)->setPoint(m_another_edge);
-        this->hide();
-        this->update();
-        this->show();
-        });
-
-    QSpinBox* radius__spinBox = new QSpinBox(menu);
-    radius__spinBox->setStyleSheet("QSpinBox{ width:120px; height:30px; font-size:16px; font-weight:bold; }");
-    radius__spinBox->setRange(0, 1000);
-    radius__spinBox->setPrefix("r: ");
-    radius__spinBox->setSuffix(" mm");
-    radius__spinBox->setSingleStep(1);
-    radius__spinBox->setValue(m_radius);
-    connect(radius__spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=](int v) {
-        if (m_another_edge.x() >= abs(m_another_edge.y())) {
-            m_radius = v <= m_edge.y() ? v : m_edge.y();
-            m_another_edge.setY((m_edge.y() - m_radius) * (-1));
-        }
-        else {
-            m_radius = v <= m_edge.x() ? v : m_edge.x();
-            m_another_edge.setX(m_edge.x() - m_radius);
-        }
-
-        //m_pointList.at(2)->setPoint(m_another_edge);
-        this->hide();
-        this->update();
-        this->show();
-        });
-
-    QWidgetAction* width_widgetAction = new QWidgetAction(menu);
-    width_widgetAction->setDefaultWidget(width_spinBox);
-    menu->addAction(width_widgetAction);
-
-    QWidgetAction* height_widgetAction = new QWidgetAction(menu);
-    height_widgetAction->setDefaultWidget(height__spinBox);
-    menu->addAction(height_widgetAction);
-
-    QWidgetAction* radius_widgetAction = new QWidgetAction(menu);
-    radius_widgetAction->setDefaultWidget(radius__spinBox);
-    menu->addAction(radius_widgetAction);
-
-    menu->exec(QCursor::pos());
-    delete menu;
-
-    QGraphicsItem::contextMenuEvent(event);
-}
-
-//------------------------------------------------------------------------------
+//BLine::BLine(qreal x, qreal y, qreal width, qreal height, ItemType type)
+//    : QGraphicsItemBasic(QPointF(x, y), QPointF(x + width / 2, y + height / 2), type)
+//{
+//    
+//}
+//
+//QRectF BLine::boundingRect() const
+//{
+//    return QRectF(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
+//}
+//
+//void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+//{
+//    Q_UNUSED(option);
+//    Q_UNUSED(widget);
+//    painter->setPen(this->pen());
+//    painter->setBrush(this->brush());
+//
+//    QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
+//    painter->drawEllipse(ret);
+//}
+//
+//void BLine::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
+//{
+//}

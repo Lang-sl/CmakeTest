@@ -1,4 +1,5 @@
 #include "QGraphicsSceneBasic.h"
+#include "QColorItem.h"
 #include <QSettings>
 #include <QFile>
 #include <QDir>
@@ -7,6 +8,12 @@
 QGraphicsSceneBasic::QGraphicsSceneBasic(QObject* parent) : QGraphicsScene(parent)
 {
     is_creating_BPolygon = false;
+    for (int i = 0; i < 10; ++i) {
+        ColorItem* colorItem = new ColorItem;
+        colorItem->setPos(i * 100 - 500, -300);
+
+        this->addItem(colorItem);
+    }
 }
 
 void QGraphicsSceneBasic::startCreate()

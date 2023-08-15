@@ -27,21 +27,11 @@ private slots:
 
     void on_ellipseBtn_clicked();
 
-    void on_conCircleBtn_clicked();
-
-    void on_pieBtn_clicked();
-
-    void on_chordBtn_clicked();
-
     void on_squareBtn_clicked();
 
     void on_rectangleBtn_clicked();
 
     void on_polygonBtn_clicked();
-
-    void on_rnRecBtn_clicked();
-
-    void on_roundRecBtn_clicked();
 
     void on_clearBtn_clicked();
 

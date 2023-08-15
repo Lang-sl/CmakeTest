@@ -23,13 +23,18 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
 
     QPushButton* circleBtn = new QPushButton(tr("圆"), this);
     QPushButton* ellipseBtn = new QPushButton(tr("椭圆"), this);
-    QPushButton* conCircleBtn = new QPushButton(tr("同心圆"), this);
+    QPushButton* squareBtn = new QPushButton(tr("正方形"), this);
+    QPushButton* rectangleBtn = new QPushButton(tr("矩形"), this);
+    QPushButton* clearBtn = new QPushButton(tr("清空"), this);
+    //QPushButton* polygonBtn = new QPushButton(tr("多边形"), this);
 
     QVBoxLayout* btnlayout = new QVBoxLayout;
 
     btnlayout->addWidget(circleBtn);
     btnlayout->addWidget(ellipseBtn);
-    btnlayout->addWidget(conCircleBtn);
+    btnlayout->addWidget(squareBtn);
+    btnlayout->addWidget(rectangleBtn);
+    btnlayout->addWidget(clearBtn);
 
     QWidget* widget = new QWidget(this);
     widget->setLayout(btnlayout);
@@ -37,7 +42,9 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
 
     connect(circleBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_circleBtn_clicked);
     connect(ellipseBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_ellipseBtn_clicked);
-    connect(conCircleBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_conCircleBtn_clicked);
+    connect(squareBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_squareBtn_clicked);
+    connect(rectangleBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_rectangleBtn_clicked);
+    connect(clearBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_clearBtn_clicked);
 }
 
 QGraphicsViewDemo::~QGraphicsViewDemo()
@@ -55,24 +62,6 @@ void QGraphicsViewDemo::on_ellipseBtn_clicked()
 {
     BEllipse* m_ellipse = new BEllipse(0, 0, 120, 80, QGraphicsItemBasic::ItemType::Ellipse);
     m_scene.addItem(m_ellipse);
-}
-
-void QGraphicsViewDemo::on_conCircleBtn_clicked()
-{
-    BConcentricCircle* m_conCircle = new BConcentricCircle(0, 0, 50, 80, QGraphicsItemBasic::ItemType::Concentric_Circle);
-    m_scene.addItem(m_conCircle);
-}
-
-void QGraphicsViewDemo::on_pieBtn_clicked()
-{
-    BPie* m_pie = new BPie(0, 0, 80, 30, QGraphicsItemBasic::ItemType::Pie);
-    m_scene.addItem(m_pie);
-}
-
-void QGraphicsViewDemo::on_chordBtn_clicked()
-{
-    BChord* m_chord = new BChord(0, 0, 80, 30, QGraphicsItemBasic::ItemType::Chord);
-    m_scene.addItem(m_chord);
 }
 
 void QGraphicsViewDemo::on_squareBtn_clicked()
@@ -98,21 +87,10 @@ void QGraphicsViewDemo::on_polygonBtn_clicked()
     //connect(&m_scene, &QGraphicsSceneBasic::createFinished, [=]() { setBtnEnabled(true); });
 }
 
-void QGraphicsViewDemo::on_rnRecBtn_clicked()
-{
-    BRound_End_Rectangle* m_round_end_Rectangle = new BRound_End_Rectangle(0, 0, 80, 60, QGraphicsItemBasic::ItemType::Round_End_Rectangle);
-    m_scene.addItem(m_round_end_Rectangle);
-}
-
-void QGraphicsViewDemo::on_roundRecBtn_clicked()
-{
-    BRounded_Rectangle* m_rounded_Rectangle = new BRounded_Rectangle(0, 0, 80, 60, QGraphicsItemBasic::ItemType::Rounded_Rectangle);
-    m_scene.addItem(m_rounded_Rectangle);
-}
-
 void QGraphicsViewDemo::on_clearBtn_clicked()
 {
     m_scene.clear();
+    m_scene.update();
 }
 
 

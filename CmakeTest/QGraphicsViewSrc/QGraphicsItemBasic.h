@@ -8,9 +8,11 @@
 #include <QPainter>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
+#include <QGraphicsItem>
 #include <QCursor>
 #include <QKeyEvent>
 #include <QList>
+#include <QtWidgets>
 //#include "bpointitem.h"
 
 #define PI 3.1415926
@@ -24,14 +26,10 @@ public:
     enum class ItemType {
         Circle = 0,         // 圆
         Ellipse,            // 椭圆
-        Concentric_Circle,  // 同心圆
-        Pie,                // 饼
-        Chord,              // 和弦
         Rectangle,          // 矩形
         Square,             // 正方形
         Polygon,            // 多边形
-        Round_End_Rectangle,// 圆端矩形
-        Rounded_Rectangle   // 圆角矩形
+        Line                // 直线
     };
 
     QPointF getCenter() { return m_center; }
@@ -76,6 +74,19 @@ protected:
         QWidget* widget) override;
 
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
+
+    void dragEnterEvent(QGraphicsSceneDragDropEvent* event) override;
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent* event) override;
+    void dropEvent(QGraphicsSceneDragDropEvent* event) override;
+
+    void setColor(QColor tempColor) { color = tempColor; }
+    QColor getColor() { return color; }
+    void setDragOver(bool tempDragOver) { dragOver = tempDragOver; }
+    bool getDragOver() { return dragOver; }
+
+private:
+    QColor color;
+    bool dragOver;
 };
 
 //------------------------------------------------------------------------------
@@ -103,69 +114,6 @@ public:
 
 //------------------------------------------------------------------------------
 
-// 同心圆
-class BConcentricCircle : public BCircle
-{
-public:
-    BConcentricCircle(qreal x, qreal y, qreal radius1, qreal radius2, ItemType type);
-
-    void updateOtherRadius();
-    void setAnotherEdge(QPointF p);
-
-protected:
-    virtual QRectF boundingRect() const override;
-
-    virtual void paint(QPainter* painter,
-        const QStyleOptionGraphicsItem* option,
-        QWidget* widget) override;
-
-    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
-
-public:
-    QPointF m_another_edge;
-    qreal m_another_radius;
-};
-
-//------------------------------------------------------------------------------
-
-// 饼
-class BPie : public BCircle
-{
-public:
-    BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type);
-
-    void updateAngle();
-
-protected:
-    virtual void paint(QPainter* painter,
-        const QStyleOptionGraphicsItem* option,
-        QWidget* widget) override;
-
-public:
-    qreal m_angle;
-};
-
-//------------------------------------------------------------------------------
-
-// 和弦
-class BChord : public BPie
-{
-public:
-    BChord(qreal x, qreal y, qreal radius, qreal angle, ItemType type);
-
-    void updateEndAngle();
-
-protected:
-    virtual void paint(QPainter* painter,
-        const QStyleOptionGraphicsItem* option,
-        QWidget* widget) override;
-
-public:
-    qreal m_end_angle;
-};
-
-//------------------------------------------------------------------------------
-
 // 矩形
 class BRectangle : public QGraphicsItemBasic
 {
@@ -180,6 +128,14 @@ protected:
         QWidget* widget) override;
 
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
+
+    void dragEnterEvent(QGraphicsSceneDragDropEvent* event) override;
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent* event) override;
+    void dropEvent(QGraphicsSceneDragDropEvent* event) override;
+
+private:
+    QColor color;
+    bool dragOver;
 };
 
 //------------------------------------------------------------------------------
@@ -192,6 +148,7 @@ public:
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
+
 };
 
 //------------------------------------------------------------------------------
@@ -225,44 +182,19 @@ public:
 
 //------------------------------------------------------------------------------
 
-// 圆端矩形
-class BRound_End_Rectangle : public BRectangle
-{
-public:
-    BRound_End_Rectangle(qreal x, qreal y, qreal width, qreal height, ItemType type);
-
-protected:
-    virtual QRectF boundingRect() const override;
-
-    virtual void paint(QPainter* painter,
-        const QStyleOptionGraphicsItem* option,
-        QWidget* widget) override;
-};
-
-//------------------------------------------------------------------------------
-
-// 圆角矩形
-class BRounded_Rectangle : public BRectangle
-{
-public:
-    BRounded_Rectangle(qreal x, qreal y, qreal width, qreal height, ItemType type);
-
-    void updateRadius();
-    void updateAnotherEdge(QPointF p);
-    qreal getRadius();
-    QPointF getAnotherEdge();
-    void setAnotherEdge(QPointF p);
-
-protected:
-    virtual void paint(QPainter* painter,
-        const QStyleOptionGraphicsItem* option,
-        QWidget* widget) override;
-
-    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
-
-public:
-    QPointF m_another_edge;
-    qreal m_radius;
-};
-
-//------------------------------------------------------------------------------
+//class BLine : public QGraphicsItemBasic
+//{
+//    Q_OBJECT
+//
+//public:
+//    BLine(qreal x, qreal y, qreal width, qreal height, ItemType type);
+//
+//protected:
+//    virtual QRectF boundingRect() const override;
+//
+//    virtual void paint(QPainter* painter,
+//        const QStyleOptionGraphicsItem* option,
+//        QWidget* widget) override;
+//
+//    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
+//};
