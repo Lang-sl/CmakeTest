@@ -28,7 +28,6 @@ public:
         Circle = 0,         // 圆
         Ellipse,            // 椭圆
         Pie,                // 圆弧
-        Arc,                // 圆弧
         Rectangle,          // 矩形
         Square,             // 正方形
         Line,               // 直线
@@ -47,6 +46,10 @@ public:
     void setColor(QColor c) { m_innercolor = c; m_innercolor_copy = c; }
 
     bool getDragOver() { return m_dragOver; }
+
+Q_SIGNALS:
+    void isFocusIn(QGraphicsItemBasic* i);
+    void isFocusOut();
 
 protected:
     QGraphicsItemBasic(QPointF center, QPointF edge, ItemType type);

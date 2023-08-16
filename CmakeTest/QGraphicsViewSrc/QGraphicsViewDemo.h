@@ -38,11 +38,18 @@ private slots:
 
     void on_showColorItem_clicked();
 
+    void on_itemFocusIn(QGraphicsItemBasic* i);
+
 private:
     Ui::QGraphicsViewDemo ui;
 
     QGraphicsSceneBasic* m_scene;
     QGraphicsViewBasic* m_view;
 
+    QDockWidget* leftNavigationDock;
+    QDockWidget* rightNavigationDock;
+
     bool m_showColorItem;
+
+    QLabel* typeLabel;
 };

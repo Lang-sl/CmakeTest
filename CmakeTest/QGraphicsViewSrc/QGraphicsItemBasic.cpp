@@ -27,6 +27,7 @@ void QGraphicsItemBasic::focusInEvent(QFocusEvent* event)
     Q_UNUSED(event);
     this->setPen(m_pen_isSelected);
     m_innercolor = m_innercolor.lighter(130);
+    emit isFocusIn(this);
 }
 
 void QGraphicsItemBasic::focusOutEvent(QFocusEvent* event)
@@ -34,6 +35,7 @@ void QGraphicsItemBasic::focusOutEvent(QFocusEvent* event)
     Q_UNUSED(event);
     this->setPen(m_pen_noSelected);
     m_innercolor = m_innercolor_copy;
+    emit isFocusOut();
 }
 
 void QGraphicsItemBasic::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
