@@ -10,4 +10,5 @@ public:
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual bool eventFilter(QObject* obj, QEvent* event) override;
 };

@@ -11,9 +11,26 @@ QGraphicsViewBasic::QGraphicsViewBasic(QWidget* parent) : QGraphicsView(parent)
 
     // 反锯齿
     setRenderHints(QPainter::Antialiasing);
+
+    // 忽略鼠标滚轮事件
+    setMouseTracking(true); // 开启鼠标追踪，确保可以捕获鼠标滚轮事件
+
+    // 在GraphicsView的事件过滤器中忽略鼠标滚轮事件
+    installEventFilter(this);
 }
 
 void QGraphicsViewBasic::mousePressEvent(QMouseEvent* event)
 {
     QGraphicsView::mousePressEvent(event);
+}
+
+bool QGraphicsViewBasic::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::Wheel)
+    {
+        event->ignore(); // 忽略鼠标滚轮事件
+        return true;
+    }
+
+    return QObject::eventFilter(obj, event);
 }

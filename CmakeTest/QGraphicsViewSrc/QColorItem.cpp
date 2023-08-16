@@ -6,7 +6,7 @@ ColorItem::ColorItem()
 {
     setToolTip(QString("QColor(%1, %2, %3)\n%4")
         .arg(color.red()).arg(color.green()).arg(color.blue())
-        .arg("Click and drag this color onto the robot!"));
+        .arg("Click and drag this color onto the Item!"));
     setCursor(Qt::OpenHandCursor);
     setAcceptedMouseButtons(Qt::LeftButton);
 }

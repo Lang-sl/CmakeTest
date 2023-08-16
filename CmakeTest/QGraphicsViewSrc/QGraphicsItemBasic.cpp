@@ -8,10 +8,13 @@
 QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType type)
     : m_center(center), m_edge(edge), m_type(type)
 {
-    m_pen_noSelected.setColor(QColor(248, 248, 255));
+    m_pen_noSelected.setColor(QColor(220, 220, 220));
     m_pen_noSelected.setWidth(2);
-    m_pen_isSelected.setColor(QColor(255, 0, 255));
+    m_pen_isSelected.setColor(QColor(255, 215, 0));
     m_pen_isSelected.setWidth(2);
+
+    m_innercolor = QColor(Qt::gray);
+    m_innercolor_copy = m_innercolor;
 
     this->setPen(m_pen_noSelected);
     this->setFlags(QGraphicsItem::ItemIsSelectable |
@@ -23,12 +26,41 @@ void QGraphicsItemBasic::focusInEvent(QFocusEvent* event)
 {
     Q_UNUSED(event);
     this->setPen(m_pen_isSelected);
+    m_innercolor = m_innercolor.lighter(130);
 }
 
 void QGraphicsItemBasic::focusOutEvent(QFocusEvent* event)
 {
     Q_UNUSED(event);
     this->setPen(m_pen_noSelected);
+    m_innercolor = m_innercolor_copy;
+}
+
+void QGraphicsItemBasic::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
+{
+    if (event->mimeData()->hasColor()) {
+        event->setAccepted(true);
+        m_dragOver = true;
+        update();
+    }
+    else {
+        event->setAccepted(false);
+    }
+}
+
+void QGraphicsItemBasic::dragLeaveEvent(QGraphicsSceneDragDropEvent* event)
+{
+    Q_UNUSED(event);
+    m_dragOver = false;
+    update();
+}
+
+void QGraphicsItemBasic::dropEvent(QGraphicsSceneDragDropEvent* event)
+{
+    m_dragOver = false;
+    if (event->mimeData()->hasColor())
+        setColor(qvariant_cast<QColor>(event->mimeData()->colorData()));
+    update();
 }
 
 //------------------------------------------------------------------------------
@@ -36,14 +68,12 @@ void QGraphicsItemBasic::focusOutEvent(QFocusEvent* event)
 BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
     : QGraphicsItemBasic(QPointF(x, y), QPointF(x + width / 2, y + height / 2), type)
 {
-    /*BPointItem* point = new BPointItem(this, m_edge, BPointItem::Edge);
+    BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
-    m_pointList.append(new BPointItem(this, m_center, BPointItem::Center));
-    m_pointList.setRandColor();*/
-
+    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    m_pointList.setRandColor();
     setAcceptDrops(true);
-    color = Qt::gray;
 }
 
 QRectF BEllipse::boundingRect() const
@@ -56,7 +86,7 @@ void BEllipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(dragOver ? color.lighter(130) : color);
+    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
     painter->drawEllipse(ret);
@@ -90,7 +120,7 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         else {
             m_edge.setX(v / 2);
         }
-        //m_pointList.at(0)->setPoint(m_edge);
+        m_pointList.at(0)->setPoint(m_edge);
         this->hide();
         this->update();
         this->show();
@@ -114,7 +144,7 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         else {
             m_edge.setY(v / 2);
         }
-        //m_pointList.at(0)->setPoint(m_edge);
+        m_pointList.at(0)->setPoint(m_edge);
         this->hide();
         this->update();
         this->show();
@@ -134,32 +164,6 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
     QGraphicsItem::contextMenuEvent(event);
 }
 
-void BEllipse::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
-{
-    if (event->mimeData()->hasColor()) {
-        event->setAccepted(true);
-        dragOver = true;
-        update();
-    }
-    else {
-        event->setAccepted(false);
-    }
-}
-
-void BEllipse::dragLeaveEvent(QGraphicsSceneDragDropEvent* event)
-{
-    Q_UNUSED(event);
-    dragOver = false;
-    update();
-}
-
-void BEllipse::dropEvent(QGraphicsSceneDragDropEvent* event)
-{
-    dragOver = false;
-    if (event->mimeData()->hasColor())
-        color = qvariant_cast<QColor>(event->mimeData()->colorData());
-    update();
-}
 
 //------------------------------------------------------------------------------
 
@@ -167,7 +171,6 @@ BCircle::BCircle(qreal x, qreal y, qreal radius, ItemType type)
     : BEllipse(x, y, radius* sqrt(2), radius* sqrt(2), type)
 {
     setAcceptDrops(true);
-    setColor(Qt::gray);
     updateRadius();
 }
 
@@ -230,7 +233,7 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
             m_edge.setY(m_center.y() + m_radius * sqrt(2) / 2);
         }
 
-        //m_pointList.at(0)->setPoint(m_edge);
+        m_pointList.at(0)->setPoint(m_edge);
         this->hide();
         this->update();
         this->show();
@@ -248,16 +251,69 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 //------------------------------------------------------------------------------
 
+BPie::BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type)
+    : BCircle(x, y, radius, type), m_angle(angle)
+{
+    if ((angle >= 0 && angle < 90) || (angle >= 270 && angle < 360))
+    {
+        m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
+        m_edge.setY(m_center.y() + radius * sin(angle / 180 * PI) * (-1));
+    }
+    else if ((angle >= 90 && angle < 270))
+    {
+        m_edge.setY(m_center.y() + radius * sin(angle / 180 * PI) * (-1));
+        m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
+    }
+
+    m_pointList.at(0)->setPoint(m_edge);
+    m_radius = radius;
+}
+
+void BPie::updateAngle()
+{
+    qreal dx = m_edge.x() - m_center.x();
+    qreal dy = m_edge.y() - m_center.y();
+
+    if (dx >= 0 && dy < 0)
+    {
+        m_angle = atan2((-1) * (dy), dx) * 180 / PI;
+    }
+    else if (dx < 0 && dy < 0)
+    {
+        m_angle = atan2((-1) * dy, dx) * 180 / PI;
+    }
+    else if (dx < 0 && dy >= 0)
+    {
+        m_angle = 360 + atan2((-1) * dy, dx) * 180 / PI;
+    }
+    else if (dx >= 0 && dy >= 0)
+    {
+        m_angle = 360 - atan2(dy, dx) * 180 / PI;
+    }
+}
+
+void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    painter->setPen(this->pen());
+    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+
+    QRectF ret(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
+    painter->drawPie(ret, 16 * 0, 16 * (m_angle));
+}
+
+//------------------------------------------------------------------------------
+
 BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType type)
     : QGraphicsItemBasic(QPointF(x, y), QPointF(width / 2, height / 2), type)
 {
-    /*BPointItem* point = new BPointItem(this, m_edge, BPointItem::Edge);
+    BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
-    m_pointList.append(new BPointItem(this, m_center, BPointItem::Center));
-    m_pointList.setRandColor();*/
+    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    m_pointList.setRandColor();
     setAcceptDrops(true);
-    color = Qt::gray;
 }
 
 QRectF BRectangle::boundingRect() const
@@ -270,7 +326,7 @@ void BRectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(dragOver ? color.lighter(130) : color);
+    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
     painter->drawRect(ret);
@@ -304,7 +360,7 @@ void BRectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         else {
             m_edge.setX(v / 2);
         }
-        //m_pointList.at(0)->setPoint(m_edge);
+        m_pointList.at(0)->setPoint(m_edge);
         this->hide();
         this->update();
         this->show();
@@ -328,7 +384,7 @@ void BRectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
         else {
             m_edge.setY(v / 2);
         }
-        //m_pointList.at(0)->setPoint(m_edge);
+        m_pointList.at(0)->setPoint(m_edge);
         this->hide();
         this->update();
         this->show();
@@ -346,33 +402,6 @@ void BRectangle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
     delete menu;
 
     QGraphicsItem::contextMenuEvent(event);
-}
-
-void BRectangle::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
-{
-    if (event->mimeData()->hasColor()) {
-        event->setAccepted(true);
-        dragOver = true;
-        update();
-    }
-    else {
-        event->setAccepted(false);
-    }
-}
-
-void BRectangle::dragLeaveEvent(QGraphicsSceneDragDropEvent* event)
-{
-    Q_UNUSED(event);
-    dragOver = false;
-    update();
-}
-
-void BRectangle::dropEvent(QGraphicsSceneDragDropEvent* event)
-{
-    dragOver = false;
-    if (event->mimeData()->hasColor())
-        color = qvariant_cast<QColor>(event->mimeData()->colorData());
-    update();
 }
 
 //------------------------------------------------------------------------------
@@ -410,7 +439,7 @@ void BSquare::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
             m_edge.setX(v / 2);
             m_edge.setY(v / 2);
         }
-        //m_pointList.at(0)->setPoint(m_edge);
+        m_pointList.at(0)->setPoint(m_edge);
         this->hide();
         this->update();
         this->show();
@@ -428,136 +457,63 @@ void BSquare::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 //------------------------------------------------------------------------------
 
-BPolygon::BPolygon(ItemType type)
-    : QGraphicsItemBasic(QPointF(0, 0), QPointF(0, 0), type)
+BLine::BLine(QPointF startPoint, QPointF endPoint, ItemType type)
+    : QGraphicsItemBasic(startPoint, endPoint, type)
 {
-    is_create_finished = false;
+    BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
+    point->setParentItem(this);
+    m_pointList.append(point);
+    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    m_pointList.setRandColor();
+    setAcceptDrops(true);
 }
 
-void BPolygon::pushPoint(QPointF p, QList<QPointF> list, bool isCenter)
+QRectF BLine::boundingRect() const
 {
-    if (!is_create_finished) {
-        m_center = getCentroid(list);
-        getMaxLength();
+    qreal minX = qMin(m_center.x(), m_edge.x());
+    qreal minY = qMin(m_center.y(), m_edge.y());
+    qreal width = qAbs(m_center.x() - m_edge.x());
+    qreal height = qAbs(m_center.y() - m_edge.y());
 
-        if (isCenter) {
-            //m_pointList.append(new BPointItem(this, m_center, BPointItem::Center));
-            //m_pointList.setRandColor();
-            is_create_finished = true;
-        }
-        else {
-            /*BPointItem* point = new BPointItem(this, p, BPointItem::Edge);
-            point->setParentItem(this);
-            m_pointList.append(point);
-            m_pointList.setColor(QColor(0, 255, 0));*/
-        }
-
-        this->update();
-    }
+    return QRectF(minX, minY, width, height);
 }
 
-QPointF BPolygon::getCentroid(QList<QPointF> list)
+void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    qreal x = 0;
-    qreal y = 0;
-    for (auto& temp : list)
-    {
-        x += temp.x();
-        y += temp.y();
-    }
-    x = x / list.size();
-    y = y / list.size();
-    return QPointF(x, y);
-}
-
-void BPolygon::getMaxLength()
-{
-    /*QVector<qreal> vec;
-    for (auto& temp : m_pointList)
-    {
-        qreal dis = sqrt(pow(m_center.x() - temp->x(), 2) + pow(m_center.y() - temp->y(), 2));
-        vec.append(dis);
-    }
-
-    qreal ret = 0;
-    for (auto& temp : vec)
-    {
-        if (temp > ret) {
-            ret = temp;
-        }
-    }
-    m_radius = ret;*/
-}
-
-void BPolygon::updatePolygon(QPointF origin, QPointF end)
-{
-    /*QList<QPointF> list;
-
-    for (auto& temp : m_pointList) {
-        if (temp->getPoint() == origin) {
-            temp->setPoint(end);
-        }
-        list.append(temp->getPoint());
-    }
-
-    m_center = getCentroid(list);
-    m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
-
-    getMaxLength();*/
-}
-
-QRectF BPolygon::boundingRect() const
-{
-    return QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
-}
-
-void BPolygon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    /*Q_UNUSED(option);
+    Q_UNUSED(option);
     Q_UNUSED(widget);
+
     painter->setPen(this->pen());
-    painter->setBrush(this->brush());
+    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
-    if (is_create_finished) {
-        for (int i = 1; i < m_pointList.size() - 1; i++)
-        {
-            painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
-        }
-
-        painter->drawLine(m_pointList.at(m_pointList.size() - 2)->getPoint(), m_pointList.at(0)->getPoint());
-    }
-    else {
-        for (int i = 1; i < m_pointList.size(); i++)
-        {
-            painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
-        }
-    }*/
+    painter->drawLine(m_center, m_edge);
 }
 
 //------------------------------------------------------------------------------
 
-//BLine::BLine(qreal x, qreal y, qreal width, qreal height, ItemType type)
-//    : QGraphicsItemBasic(QPointF(x, y), QPointF(x + width / 2, y + height / 2), type)
-//{
-//    
-//}
-//
-//QRectF BLine::boundingRect() const
-//{
-//    return QRectF(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
-//}
-//
-//void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-//{
-//    Q_UNUSED(option);
-//    Q_UNUSED(widget);
-//    painter->setPen(this->pen());
-//    painter->setBrush(this->brush());
-//
-//    QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
-//    painter->drawEllipse(ret);
-//}
-//
-//void BLine::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
-//{
-//}
+BPoint::BPoint(QPointF position, ItemType type)
+    : QGraphicsItemBasic(position, position, type), m_position(position)
+{
+    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    m_pointList.setRandColor();
+    setAcceptDrops(true);
+}
+
+QRectF BPoint::boundingRect() const
+{
+    qreal size = 10.0; // 设置点的大小
+
+    return QRectF(m_position.x() - size, m_position.y() - size, size * 2, size * 2);
+}
+
+void BPoint::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
+    painter->setPen(this->pen());
+    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+
+    qreal size = 3.0; // 设置点的大小
+    painter->drawEllipse(m_position, size, size);
+}

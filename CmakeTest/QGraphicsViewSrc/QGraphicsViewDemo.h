@@ -7,10 +7,7 @@
 #include "QGraphicsItemBasic.h"
 #include "QGraphicsSceneBasic.h"
 #include "QGraphicsViewBasic.h"
-
-QT_BEGIN_NAMESPACE
-namespace Ui { class QGraphicsViewDemo; }
-QT_END_NAMESPACE
+#include "ui_QGraphicsViewDemo.h"
 
 class QGraphicsViewDemo : public QMainWindow
 {
@@ -27,18 +24,25 @@ private slots:
 
     void on_ellipseBtn_clicked();
 
+    void on_pieBtn_clicked();
+
     void on_squareBtn_clicked();
 
     void on_rectangleBtn_clicked();
 
-    void on_polygonBtn_clicked();
-
     void on_clearBtn_clicked();
 
+    void on_lineBtn_clicked();
+
+    void on_pointBtn_clicked();
+
+    void on_showColorItem_clicked();
+
 private:
-    Ui::QGraphicsViewDemo* ui;
+    Ui::QGraphicsViewDemo ui;
 
+    QGraphicsSceneBasic* m_scene;
+    QGraphicsViewBasic* m_view;
 
-    QGraphicsSceneBasic m_scene;
-    QGraphicsViewBasic m_view;
+    bool m_showColorItem;
 };
