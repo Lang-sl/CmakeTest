@@ -37,9 +37,13 @@ protected:
 
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
+    virtual void focusOutEvent(QFocusEvent* event) override;
+
 public:
     QPointF m_point;
     PointType m_type;
+
+    //friend class QGraphicsItemBasic;
 };
 
 //------------------------------------------------------------------------------

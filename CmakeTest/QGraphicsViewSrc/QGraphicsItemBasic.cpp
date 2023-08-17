@@ -13,6 +13,8 @@ QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType ty
     m_pen_isSelected.setColor(QColor(255, 160, 0));
     m_pen_isSelected.setWidth(2);
 
+
+    m_itemPosInScene = this->pos();
     /*m_innercolor = QColor(Qt::gray);
     m_innercolor_copy = m_innercolor;*/
 
@@ -20,6 +22,25 @@ QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType ty
     this->setFlags(QGraphicsItem::ItemIsSelectable |
         QGraphicsItem::ItemIsMovable |
         QGraphicsItem::ItemIsFocusable);
+}
+
+//QVariant QGraphicsItemBasic::itemChange(GraphicsItemChange change, const QVariant& value)
+//{
+//    if (change == QGraphicsItem::ItemPositionChange) {
+//        QPointF newPos = value.toPointF();
+//        m_itemPosInScene = this->pos();
+//        return newPos;
+//    }
+//
+//    // 对于其他属性的变化，使用默认的处理方式
+//    return QGraphicsItem::itemChange(change, value);
+//}
+
+void QGraphicsItemBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+{
+    m_itemPosInScene = this->pos();
+    emit isFocusIn(this);
+    QAbstractGraphicsShapeItem::mouseMoveEvent(event);
 }
 
 void QGraphicsItemBasic::focusInEvent(QFocusEvent* event)
@@ -73,6 +94,7 @@ BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
     BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
+    m_itemedgePosInScene = point->pos();
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
     setAcceptDrops(true);
@@ -102,7 +124,7 @@ void BEllipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
 
-    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+    //painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
 
     painter->drawEllipse(ret);
 }
@@ -295,6 +317,7 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type)
     }
 
     m_pointList.at(0)->setPoint(m_edge);
+    m_itemedgePosInScene = m_edge;
     m_radius = radius;
 }
 
@@ -360,6 +383,7 @@ BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType typ
     BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
+    m_itemedgePosInScene = point->pos();
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
     setAcceptDrops(true);
@@ -524,6 +548,7 @@ BLine::BLine(QPointF startPoint, QPointF endPoint, ItemType type)
     BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
+    m_itemedgePosInScene = point->pos();
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
     setAcceptDrops(true);

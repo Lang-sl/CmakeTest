@@ -27,6 +27,8 @@ class QGraphicsItemBasic : public QObject, public QAbstractGraphicsShapeItem
     Q_OBJECT
 
 public:
+    friend class BPointItem;
+
     enum class ItemType {
         Circle = 0,         // 圆
         Ellipse,            // 椭圆
@@ -37,11 +39,19 @@ public:
         Point               // 点
     };
 
+    QGraphicsItemBasic() { ; }
+
     QPointF getCenter() { return m_center; }
     void setCenter(QPointF p) { m_center = p; }
 
     QPointF getEdge() { return m_edge; }
     void setEdge(QPointF p) { m_edge = p; }
+
+    QPointF getItemPosInScene() { return m_itemPosInScene; }
+    void setItemPosInScene(QPointF p) { m_itemPosInScene = p; }
+
+    QPointF getItemedgePosInScene() { return m_itemedgePosInScene; }
+    void setItemedgePosInScene(QPointF p) { m_itemedgePosInScene = p;}
 
     ItemType getType() { return m_type; }
 
@@ -57,17 +67,24 @@ Q_SIGNALS:
 protected:
     QGraphicsItemBasic(QPointF center, QPointF edge, ItemType type);
 
-    virtual void focusInEvent(QFocusEvent* event) override;
-    virtual void focusOutEvent(QFocusEvent* event) override;
+    //QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
     void dragEnterEvent(QGraphicsSceneDragDropEvent* event) override;
     void dragLeaveEvent(QGraphicsSceneDragDropEvent* event) override;
     void dropEvent(QGraphicsSceneDragDropEvent* event) override;
 
+    virtual void focusInEvent(QFocusEvent* event) override;
+    virtual void focusOutEvent(QFocusEvent* event) override;
+
+    QPointF m_itemPosInScene;
+    QPointF m_itemedgePosInScene;
+
+    BPointItemList m_pointList;
+
     QPointF m_center;
     QPointF m_edge;
     ItemType m_type;
-    BPointItemList m_pointList;
 
     QPen m_pen_isSelected;
     QPen m_pen_noSelected;
@@ -76,6 +93,40 @@ protected:
     QColor m_innercolor_copy;*/
 
     bool m_dragOver;
+
+};
+//------------------------------------------------------------------------------
+
+// 坐标系
+
+class CoordinateSystem : public QGraphicsItemBasic
+{
+public:
+    CoordinateSystem() { ; }
+
+protected:
+    QRectF boundingRect() const override
+    {
+        return QRectF(-1000, -1000, 2000, 2000); // 坐标系的边界矩形
+    }
+
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) override
+    {
+        QPen pen;
+        pen.setColor(Qt::black);
+        pen.setWidth(1);
+        painter->setPen(pen);
+
+        // 绘制横轴
+        painter->drawLine(-1000, 0, 1000, 0);
+        for (int x = -1000; x <= 1000; x += 50)
+            painter->drawText(x - 3, 15, QString::number(x));
+
+        // 绘制纵轴
+        painter->drawLine(0, -1000, 0, 1000);
+        for (int y = -1000; y <= 1000; y += 50)
+            painter->drawText(-15, y + 5, QString::number(y));
+    }
 };
 
 //------------------------------------------------------------------------------

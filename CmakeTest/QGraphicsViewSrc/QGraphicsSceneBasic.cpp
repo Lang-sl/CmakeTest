@@ -6,7 +6,8 @@
 
 QGraphicsSceneBasic::QGraphicsSceneBasic(QObject* parent) : QGraphicsScene(parent)
 {
-    addColorItem();
+    //addColorItem();
+    addCoordinateSystem();
 }
 
 void QGraphicsSceneBasic::addColorItem()
@@ -18,6 +19,11 @@ void QGraphicsSceneBasic::addColorItem()
         m_colorItemList[i]->setPos(i * 100 - 500, -300);
         this->addItem(m_colorItemList[i]);
     }
+}
+
+void QGraphicsSceneBasic::addCoordinateSystem()
+{
+    this->addItem(new CoordinateSystem);
 }
 
 void QGraphicsSceneBasic::isShowColorItem(bool b)

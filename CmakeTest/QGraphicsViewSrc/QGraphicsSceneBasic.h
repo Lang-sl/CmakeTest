@@ -14,6 +14,8 @@ public:
 
     void addColorItem();
 
+    void addCoordinateSystem();
+
     void isShowColorItem(bool b);
     
 signals:

@@ -36,7 +36,7 @@ private slots:
 
     void on_pointBtn_clicked();
 
-    void on_showColorItem_clicked();
+    //void on_showColorItem_clicked();
 
     void on_itemFocusIn(QGraphicsItemBasic* i);
 
@@ -51,5 +51,11 @@ private:
 
     bool m_showColorItem;
 
-    QLabel* typeLabel;
+    QLabel* type;
+
+    QLineEdit* center_x;
+    QLineEdit* center_y;
+
+    QLineEdit* edge_x;
+    QLineEdit* edge_y;
 };

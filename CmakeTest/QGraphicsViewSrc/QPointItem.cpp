@@ -59,11 +59,17 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         case PointType::Center: {
             item->moveBy(dx, dy);
             this->scene()->update();
+            item->setItemPosInScene(item->pos());
+            item->setItemedgePosInScene(this->mapToScene(item->m_pointList[0]->pos()));
+            item->focusInEvent(nullptr);
         } break;
         case PointType::Edge: {
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
+            //item->setItemPosInScene(item->pos());
+            item->setItemedgePosInScene(this->mapToScene(event->pos()));
+            item->focusInEvent(nullptr);
             switch (itemType) {
             case QGraphicsItemBasic::ItemType::Ellipse: {
                 BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
@@ -103,6 +109,12 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     }
 }
 
+void BPointItem::focusOutEvent(QFocusEvent* event)
+{
+    QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(this->parentItem());
+    item->focusOutEvent(nullptr);
+}
+
 //------------------------------------------------------------------------------
 
 void BPointItemList::setRandColor()
@@ -125,3 +137,4 @@ void BPointItemList::setVisible(bool visible)
         temp->setVisible(visible);
     }
 }
+
