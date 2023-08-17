@@ -18,6 +18,9 @@
 
 #define PI 3.1415926
 
+#define SELECTOFFSET 5 
+#define SELECTWIDTH 10 // 选中线框的宽度
+
 // 自定义图元 - 基础类
 class QGraphicsItemBasic : public QObject, public QAbstractGraphicsShapeItem
 {
@@ -42,8 +45,8 @@ public:
 
     ItemType getType() { return m_type; }
 
-    QColor getColor() { return m_innercolor; }
-    void setColor(QColor c) { m_innercolor = c; m_innercolor_copy = c; }
+    /*QColor getColor() { return m_innercolor; }
+    void setColor(QColor c) { m_innercolor = c; m_innercolor_copy = c; }*/
 
     bool getDragOver() { return m_dragOver; }
 
@@ -61,7 +64,6 @@ protected:
     void dragLeaveEvent(QGraphicsSceneDragDropEvent* event) override;
     void dropEvent(QGraphicsSceneDragDropEvent* event) override;
 
-public:
     QPointF m_center;
     QPointF m_edge;
     ItemType m_type;
@@ -70,8 +72,8 @@ public:
     QPen m_pen_isSelected;
     QPen m_pen_noSelected;
 
-    QColor m_innercolor;
-    QColor m_innercolor_copy;
+    /*QColor m_innercolor;
+    QColor m_innercolor_copy;*/
 
     bool m_dragOver;
 };
@@ -88,6 +90,8 @@ public:
 
 protected:
     virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
 
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
@@ -110,6 +114,8 @@ public:
 protected:
     virtual QRectF boundingRect() const override;
 
+    virtual QPainterPath shape() const;
+
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
         QWidget* widget) override;
@@ -131,12 +137,18 @@ public:
     void updateAngle();
 
 protected:
+
+    virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
+
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
         QWidget* widget) override;
 
 public:
-    qreal m_angle;
+    qreal m_startAngle;
+    qreal m_endAngle;
 };
 
 //------------------------------------------------------------------------------
@@ -150,6 +162,8 @@ public:
 
 protected:
     virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
 
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
@@ -183,6 +197,8 @@ public:
 
 protected:
     virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
 
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,

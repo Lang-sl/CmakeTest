@@ -10,11 +10,11 @@ QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType ty
 {
     m_pen_noSelected.setColor(QColor(220, 220, 220));
     m_pen_noSelected.setWidth(2);
-    m_pen_isSelected.setColor(QColor(255, 215, 0));
+    m_pen_isSelected.setColor(QColor(255, 160, 0));
     m_pen_isSelected.setWidth(2);
 
-    m_innercolor = QColor(Qt::gray);
-    m_innercolor_copy = m_innercolor;
+    /*m_innercolor = QColor(Qt::gray);
+    m_innercolor_copy = m_innercolor;*/
 
     this->setPen(m_pen_noSelected);
     this->setFlags(QGraphicsItem::ItemIsSelectable |
@@ -26,7 +26,7 @@ void QGraphicsItemBasic::focusInEvent(QFocusEvent* event)
 {
     Q_UNUSED(event);
     this->setPen(m_pen_isSelected);
-    m_innercolor = m_innercolor.lighter(130);
+    //m_innercolor = m_innercolor.lighter(130);
     emit isFocusIn(this);
 }
 
@@ -34,7 +34,7 @@ void QGraphicsItemBasic::focusOutEvent(QFocusEvent* event)
 {
     Q_UNUSED(event);
     this->setPen(m_pen_noSelected);
-    m_innercolor = m_innercolor_copy;
+    //m_innercolor = m_innercolor_copy;
     emit isFocusOut();
 }
 
@@ -60,8 +60,8 @@ void QGraphicsItemBasic::dragLeaveEvent(QGraphicsSceneDragDropEvent* event)
 void QGraphicsItemBasic::dropEvent(QGraphicsSceneDragDropEvent* event)
 {
     m_dragOver = false;
-    if (event->mimeData()->hasColor())
-        setColor(qvariant_cast<QColor>(event->mimeData()->colorData()));
+    /*if (event->mimeData()->hasColor())
+        setColor(qvariant_cast<QColor>(event->mimeData()->colorData()));*/
     update();
 }
 
@@ -80,7 +80,17 @@ BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
 
 QRectF BEllipse::boundingRect() const
 {
-    return QRectF(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
+    return QRectF(m_center.x() - abs(m_edge.x()) - SELECTOFFSET, m_center.y() - abs(m_edge.y()) - SELECTOFFSET, (abs(m_edge.x()) + SELECTOFFSET) * 2, (abs(m_edge.y()) + SELECTOFFSET) * 2);
+}
+
+QPainterPath BEllipse::shape() const
+{
+    QPainterPath m_path;
+    m_path.addEllipse(QRectF(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2));
+
+    QPainterPathStroker stroker;
+    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+    return stroker.createStroke(m_path);
 }
 
 void BEllipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -88,9 +98,12 @@ void BEllipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+    //painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
+
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+
     painter->drawEllipse(ret);
 }
 
@@ -183,7 +196,17 @@ void BCircle::updateRadius()
 
 QRectF BCircle::boundingRect() const
 {
-    return QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
+    return QRectF(m_center.x() - m_radius - SELECTOFFSET, m_center.y() - m_radius - SELECTOFFSET, (m_radius + SELECTOFFSET) * 2, (m_radius + SELECTOFFSET) * 2);
+}
+
+QPainterPath BCircle::shape() const
+{
+    QPainterPath m_path;
+    m_path.addEllipse(QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2));
+
+    QPainterPathStroker stroker;
+    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+    return stroker.createStroke(m_path);
 }
 
 void BCircle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -191,9 +214,12 @@ void BCircle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+    //painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
+
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+
     painter->drawEllipse(ret);
 }
 
@@ -254,8 +280,9 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 //------------------------------------------------------------------------------
 
 BPie::BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type)
-    : BCircle(x, y, radius, type), m_angle(angle)
+    : BCircle(x, y, radius, type), m_endAngle(angle)
 {
+    m_startAngle = 0;
     if ((angle >= 0 && angle < 90) || (angle >= 270 && angle < 360))
     {
         m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
@@ -278,20 +305,37 @@ void BPie::updateAngle()
 
     if (dx >= 0 && dy < 0)
     {
-        m_angle = atan2((-1) * (dy), dx) * 180 / PI;
+        m_endAngle = atan2((-1) * (dy), dx) * 180 / PI;
     }
     else if (dx < 0 && dy < 0)
     {
-        m_angle = atan2((-1) * dy, dx) * 180 / PI;
+        m_endAngle = atan2((-1) * dy, dx) * 180 / PI;
     }
     else if (dx < 0 && dy >= 0)
     {
-        m_angle = 360 + atan2((-1) * dy, dx) * 180 / PI;
+        m_endAngle = 360 + atan2((-1) * dy, dx) * 180 / PI;
     }
     else if (dx >= 0 && dy >= 0)
     {
-        m_angle = 360 - atan2(dy, dx) * 180 / PI;
+        m_endAngle = 360 - atan2(dy, dx) * 180 / PI;
     }
+}
+
+QRectF BPie::boundingRect() const
+{
+    return QRectF(m_center.x() - m_radius - SELECTOFFSET, m_center.y() - m_radius - SELECTOFFSET, (m_radius + SELECTOFFSET) * 2, (m_radius + SELECTOFFSET) * 2);
+}
+
+QPainterPath BPie::shape() const
+{
+    QPainterPath m_path;
+    m_path.moveTo(m_center);
+    m_path.arcTo(QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2), m_startAngle, m_endAngle);
+    m_path.lineTo(m_center);
+
+    QPainterPathStroker stroker;
+    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+    return stroker.createStroke(m_path);
 }
 
 void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -299,10 +343,13 @@ void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+    //painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
-    painter->drawPie(ret, 16 * 0, 16 * (m_angle));
+
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+    
+    painter->drawPie(ret, 16 * (m_startAngle), 16 * (m_endAngle));
 }
 
 //------------------------------------------------------------------------------
@@ -320,7 +367,18 @@ BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType typ
 
 QRectF BRectangle::boundingRect() const
 {
-    return QRectF(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
+    return QRectF(m_center.x() - abs(m_edge.x()) - SELECTOFFSET, m_center.y() - abs(m_edge.y()) - SELECTOFFSET, (abs(m_edge.x()) + SELECTOFFSET) * 2, (abs(m_edge.y()) + SELECTOFFSET) * 2);
+}
+
+QPainterPath BRectangle::shape() const
+{
+    QPainterPath m_path;
+    m_path.moveTo(m_center);
+    m_path.addRect(QRectF(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2));
+
+    QPainterPathStroker stroker;
+    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+    return stroker.createStroke(m_path);
 }
 
 void BRectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -328,9 +386,10 @@ void BRectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(this->pen());
-    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+    //painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
     painter->drawRect(ret);
 }
 
@@ -477,7 +536,18 @@ QRectF BLine::boundingRect() const
     qreal width = qAbs(m_center.x() - m_edge.x());
     qreal height = qAbs(m_center.y() - m_edge.y());
 
-    return QRectF(minX, minY, width, height);
+    return QRectF(minX - SELECTOFFSET, minY - SELECTOFFSET, width + SELECTOFFSET * 2, height + SELECTOFFSET * 2);
+}
+
+QPainterPath BLine::shape() const
+{
+    QPainterPath m_path;
+    m_path.moveTo(m_center);
+    m_path.lineTo(m_edge);
+
+    QPainterPathStroker stroker;
+    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+    return stroker.createStroke(m_path);
 }
 
 void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -486,8 +556,9 @@ void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWi
     Q_UNUSED(widget);
 
     painter->setPen(this->pen());
-    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+    //painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
     painter->drawLine(m_center, m_edge);
 }
 
@@ -505,7 +576,7 @@ QRectF BPoint::boundingRect() const
 {
     qreal size = 10.0; // 设置点的大小
 
-    return QRectF(m_position.x() - size, m_position.y() - size, size * 2, size * 2);
+    return QRectF(m_position.x() - size - SELECTOFFSET, m_position.y() - size - SELECTOFFSET, (size + SELECTOFFSET) * 2, (size + SELECTOFFSET) * 2);
 }
 
 void BPoint::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -514,7 +585,7 @@ void BPoint::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QW
     Q_UNUSED(widget);
 
     painter->setPen(this->pen());
-    painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
+    //painter->setBrush(getDragOver() ? getColor().lighter(130) : getColor());
 
     qreal size = 3.0; // 设置点的大小
     painter->drawEllipse(m_position, size, size);
