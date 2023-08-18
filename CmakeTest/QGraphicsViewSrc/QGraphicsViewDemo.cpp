@@ -31,6 +31,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     
     QLabel* typeLabel = new QLabel("Type: ", rightNavigationDock);
     type = new QLabel("type", rightNavigationDock);
+    type->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     QLabel* centerLabel = new QLabel("CenterPoint: ", rightNavigationDock);
     center_x = new QLineEdit;
     center_y = new QLineEdit;
@@ -110,7 +111,7 @@ void QGraphicsViewDemo::on_circleBtn_clicked()
     BCircle* m_circle = new BCircle(0, 0, 50, QGraphicsItemBasic::ItemType::Circle);
     m_scene->addItem(m_circle);
     connect(m_circle, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_circle, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_circle, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_ellipseBtn_clicked()
@@ -118,15 +119,15 @@ void QGraphicsViewDemo::on_ellipseBtn_clicked()
     BEllipse* m_ellipse = new BEllipse(0, 0, 120, 80, QGraphicsItemBasic::ItemType::Ellipse);
     m_scene->addItem(m_ellipse);
     connect(m_ellipse, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_ellipse, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_ellipse, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_pieBtn_clicked()
 {
-    BPie* m_pie = new BPie(0, 0, 80, 30, QGraphicsItemBasic::ItemType::Pie);
+    BPie* m_pie = new BPie(0, 0, 80, 0, 30, QGraphicsItemBasic::ItemType::Pie);
     m_scene->addItem(m_pie);
     connect(m_pie, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_pie, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_pie, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_squareBtn_clicked()
@@ -134,7 +135,7 @@ void QGraphicsViewDemo::on_squareBtn_clicked()
     BSquare* m_square = new BSquare(0, 0, 60, QGraphicsItemBasic::ItemType::Square);
     m_scene->addItem(m_square);
     connect(m_square, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_square, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_square, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_rectangleBtn_clicked()
@@ -142,7 +143,7 @@ void QGraphicsViewDemo::on_rectangleBtn_clicked()
     BRectangle* m_rectangle = new BRectangle(0, 0, 80, 60, QGraphicsItemBasic::ItemType::Rectangle);
     m_scene->addItem(m_rectangle);
     connect(m_rectangle, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_rectangle, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_rectangle, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_clearBtn_clicked()
@@ -158,7 +159,7 @@ void QGraphicsViewDemo::on_lineBtn_clicked()
     BLine* m_line = new BLine( QPointF(0,0), QPointF(100,100), QGraphicsItemBasic::ItemType::Line);
     m_scene->addItem(m_line);
     connect(m_line, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_line, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_line, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_pointBtn_clicked()
@@ -166,7 +167,7 @@ void QGraphicsViewDemo::on_pointBtn_clicked()
     BPoint* m_point = new BPoint(QPointF(0, 0), QGraphicsItemBasic::ItemType::Point);
     m_scene->addItem(m_point);
     connect(m_point, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_point, &QGraphicsItemBasic::isFocusOut, rightNavigationDock, &QDockWidget::hide);
+    connect(m_point, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 //void QGraphicsViewDemo::on_showColorItem_clicked()
@@ -187,60 +188,79 @@ void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
         //center_x->setText(QString("(x: %1,y: %2)").arg(QString::number(ellipse->getCenter().x())).arg(QString::number(ellipse->getCenter().y())));
         center_x->setText(QString::number(ellipse->getItemPosInScene().x()));
         center_y->setText(QString::number(ellipse->getItemPosInScene().y()));
-        edge_x->setText(QString::number(ellipse->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(ellipse->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(ellipse->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(ellipse->getItemedgePosInScene().y()));
     } break;
     case QGraphicsItemBasic::ItemType::Circle: {
         BCircle* circle = dynamic_cast<BCircle*>(item);
         type->setText("圆");
         center_x->setText(QString::number(circle->getItemPosInScene().x()));
         center_y->setText(QString::number(circle->getItemPosInScene().y()));
-        edge_x->setText(QString::number(circle->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(circle->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(circle->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(circle->getItemedgePosInScene().y()));
     } break;
     case QGraphicsItemBasic::ItemType::Pie: {
         BPie* pie = dynamic_cast<BPie*>(item);
         type->setText("圆弧");
         center_x->setText(QString::number(pie->getItemPosInScene().x()));
         center_y->setText(QString::number(pie->getItemPosInScene().y()));
-        edge_x->setText(QString::number(pie->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(pie->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(pie->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(pie->getItemedgePosInScene().y()));
     } break;
     case QGraphicsItemBasic::ItemType::Rectangle: {
         BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
         type->setText("矩形");
         center_x->setText(QString::number(rectangle->getItemPosInScene().x()));
         center_y->setText(QString::number(rectangle->getItemPosInScene().y()));
-        edge_x->setText(QString::number(rectangle->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(rectangle->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(rectangle->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(rectangle->getItemedgePosInScene().y()));
     } break;
     case QGraphicsItemBasic::ItemType::Square: {
         BSquare* square = dynamic_cast<BSquare*>(item);
         type->setText("正方形");
         center_x->setText(QString::number(square->getItemPosInScene().x()));
         center_y->setText(QString::number(square->getItemPosInScene().y()));
-        edge_x->setText(QString::number(square->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(square->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(square->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(square->getItemedgePosInScene().y()));
     } break;
     case QGraphicsItemBasic::ItemType::Line: {
         BLine* line = dynamic_cast<BLine*>(item);
         type->setText("直线");
         center_x->setText(QString::number(line->getItemPosInScene().x()));
         center_y->setText(QString::number(line->getItemPosInScene().y()));
-        edge_x->setText(QString::number(line->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(line->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(line->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(line->getItemedgePosInScene().y()));
     } break;
     case QGraphicsItemBasic::ItemType::Point: {
         BPoint* point = dynamic_cast<BPoint*>(item);
         type->setText("点");
         center_x->setText(QString::number(point->getItemPosInScene().x()));
         center_y->setText(QString::number(point->getItemPosInScene().y()));
-        edge_x->setText(QString::number(point->getItemedgePosInScene().x()));
-        edge_y->setText(QString::number(point->getItemedgePosInScene().y()));
+        //edge_x->setText(QString::number(point->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(point->getItemedgePosInScene().y()));
     } break;
     default: break;
     }
     rightNavigationDock->show();
+}
+
+void QGraphicsViewDemo::on_itemFocusOut(QGraphicsItemBasic* i)
+{
+    bool isFocus = false;
+    QList<QWidget*> childWidgets = rightNavigationDock->findChildren<QWidget*>();
+    for each(QWidget * childWidget in childWidgets) {
+        if (childWidget->hasFocus()) {
+            isFocus = true;
+        }
+    }
+    if (rightNavigationDock->hasFocus() || isFocus)
+    {
+        ;
+    }
+    else
+    {
+        rightNavigationDock->hide();
+    }
 }
 
 

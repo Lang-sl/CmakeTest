@@ -40,6 +40,8 @@ private slots:
 
     void on_itemFocusIn(QGraphicsItemBasic* i);
 
+    void on_itemFocusOut(QGraphicsItemBasic* i);
+
 private:
     Ui::QGraphicsViewDemo ui;
 

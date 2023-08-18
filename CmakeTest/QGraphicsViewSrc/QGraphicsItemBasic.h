@@ -16,8 +16,6 @@
 
 #include "QPointItem.h"
 
-#define PI 3.1415926
-
 #define SELECTOFFSET 5 
 #define SELECTWIDTH 10 // 选中线框的宽度
 
@@ -44,14 +42,15 @@ public:
     QPointF getCenter() { return m_center; }
     void setCenter(QPointF p) { m_center = p; }
 
-    QPointF getEdge() { return m_edge; }
-    void setEdge(QPointF p) { m_edge = p; }
+    QList<QPointF> getEdges() { return m_edges; }
+    virtual void setEdges(QList<QPointF> p, int i) { m_edges = p; };
+    int getEdgeIndex(BPointItem* pointItem) const;
 
     QPointF getItemPosInScene() { return m_itemPosInScene; }
     void setItemPosInScene(QPointF p) { m_itemPosInScene = p; }
 
-    QPointF getItemedgePosInScene() { return m_itemedgePosInScene; }
-    void setItemedgePosInScene(QPointF p) { m_itemedgePosInScene = p;}
+    QList<QPointF> getItemedgePosInScene() { return m_itemedgePosInScene; }
+    void setItemedgePosInScene(QList<QPointF> p) { m_itemedgePosInScene = p;}
 
     ItemType getType() { return m_type; }
 
@@ -62,10 +61,10 @@ public:
 
 Q_SIGNALS:
     void isFocusIn(QGraphicsItemBasic* i);
-    void isFocusOut();
+    void isFocusOut(QGraphicsItemBasic* i);
 
 protected:
-    QGraphicsItemBasic(QPointF center, QPointF edge, ItemType type);
+    QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPointF> edges, ItemType type);
 
     //QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
@@ -78,12 +77,15 @@ protected:
     virtual void focusOutEvent(QFocusEvent* event) override;
 
     QPointF m_itemPosInScene;
-    QPointF m_itemedgePosInScene;
+    QList<QPointF> m_itemedgePosInScene;
 
     BPointItemList m_pointList;
 
     QPointF m_center;
-    QPointF m_edge;
+    QPointF m_edge;         //确定边界用
+    QList<QPointF> m_edges; //边上可拖拽点集合
+
+    QPointF m_lastPos;
     ItemType m_type;
 
     QPen m_pen_isSelected;
@@ -139,6 +141,8 @@ class BEllipse : public QGraphicsItemBasic
 public:
     BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type);
 
+    virtual void setEdges(QList<QPointF> p, int i) override;
+
 protected:
     virtual QRectF boundingRect() const override;
 
@@ -150,12 +154,17 @@ protected:
 
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
 
+private:
+
+    qreal m_semiMajorAxis;
+    qreal m_semiMinorAxis;
+
 };
 
 //------------------------------------------------------------------------------
 
 // 圆
-class BCircle : public BEllipse
+class BCircle : public QGraphicsItemBasic
 {
 public:
     BCircle(qreal x, qreal y, qreal radius, ItemType type);
@@ -180,10 +189,10 @@ public:
 //------------------------------------------------------------------------------
 
 // 饼
-class BPie : public BCircle
+class BPie : public QGraphicsItemBasic
 {
 public:
-    BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type);
+    BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
 
     void updateAngle();
 
@@ -200,6 +209,7 @@ protected:
 public:
     qreal m_startAngle;
     qreal m_endAngle;
+    qreal m_radius;
 };
 
 //------------------------------------------------------------------------------

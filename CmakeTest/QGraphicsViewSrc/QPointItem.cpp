@@ -60,46 +60,68 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             item->moveBy(dx, dy);
             this->scene()->update();
             item->setItemPosInScene(item->pos());
-            item->setItemedgePosInScene(this->mapToScene(item->m_pointList[0]->pos()));
+            QList<QPointF> listP;
+            for each (BPointItem* pointI in (item->m_pointList))
+            {
+                if (pointI->m_type == PointType::Edge)
+                {
+                    listP.append(this->mapToScene(pointI->pos()));
+                }
+            }
+            item->setItemedgePosInScene(listP);
             item->focusInEvent(nullptr);
         } break;
         case PointType::Edge: {
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
-            //item->setItemPosInScene(item->pos());
-            item->setItemedgePosInScene(this->mapToScene(event->pos()));
+
+            item->setItemPosInScene(item->pos());
+            QList<QPointF> listP;
+            for each (BPointItem* pointI in (item->m_pointList))
+            {
+                if (pointI->m_type == PointType::Edge)
+                {
+                    listP.append(this->mapToScene(pointI->pos()));
+                }
+            }
+            item->setItemedgePosInScene(listP);
             item->focusInEvent(nullptr);
             switch (itemType) {
             case QGraphicsItemBasic::ItemType::Ellipse: {
                 BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
-                ellipse->setEdge(m_point);
+                QList<QPointF> newEdges = ellipse->getEdges();
+                int index = ellipse->getEdgeIndex(this);
+                if (index != -1) {
+                    newEdges[index] = m_point;
+                    ellipse->setEdges(newEdges, index);
+                }
             } break;
             case QGraphicsItemBasic::ItemType::Circle: {
                 BCircle* circle = dynamic_cast<BCircle*>(item);
-                circle->setEdge(m_point);
+                //circle->setEdges(m_point);
                 circle->updateRadius();
             } break;
             case QGraphicsItemBasic::ItemType::Pie: {
                 BPie* pie = dynamic_cast<BPie*>(item);
-                pie->setEdge(m_point);
-                pie->updateRadius();
+                //pie->setEdges(m_point);
+                //pie->updateRadius();
                 pie->updateAngle();
             } break;
             case QGraphicsItemBasic::ItemType::Rectangle: {
                 BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
-                rectangle->setEdge(m_point);
+                //rectangle->setEdges(m_point);
             } break;
             case QGraphicsItemBasic::ItemType::Square: {
                 BSquare* square = dynamic_cast<BSquare*>(item);
                 qreal ret = m_point.x() > m_point.y() ? m_point.x() : m_point.y();
                 m_point.setX(ret);
                 m_point.setY(ret);
-                square->setEdge(m_point);
+                //square->setEdges(m_point);
             } break;
             case QGraphicsItemBasic::ItemType::Line: {
                 BLine* line = dynamic_cast<BLine*>(item);
-                line->setEdge(m_point);
+                //line->setEdges(m_point);
             } break;
             default: break;
             }

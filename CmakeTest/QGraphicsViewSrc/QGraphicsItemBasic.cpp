@@ -5,8 +5,8 @@
 #include <QSpinBox>
 #include <QWidgetAction>
 
-QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType type)
-    : m_center(center), m_edge(edge), m_type(type)
+QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPointF> edges, ItemType type)
+    : m_center(center), m_edge(edge), m_edges(edges), m_type(type)
 {
     m_pen_noSelected.setColor(QColor(220, 220, 220));
     m_pen_noSelected.setWidth(2);
@@ -36,9 +36,20 @@ QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, ItemType ty
 //    return QGraphicsItem::itemChange(change, value);
 //}
 
+int QGraphicsItemBasic::getEdgeIndex(BPointItem* pointItem) const
+{
+    for (int i = 0; i < m_edges.size(); i++) {
+        if (m_pointList[i]->m_point == pointItem->m_point) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void QGraphicsItemBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
     m_itemPosInScene = this->pos();
+    m_itemedgePosInScene += (event->pos()- event->lastScenePos());
     emit isFocusIn(this);
     QAbstractGraphicsShapeItem::mouseMoveEvent(event);
 }
@@ -56,7 +67,7 @@ void QGraphicsItemBasic::focusOutEvent(QFocusEvent* event)
     Q_UNUSED(event);
     this->setPen(m_pen_noSelected);
     //m_innercolor = m_innercolor_copy;
-    emit isFocusOut();
+    emit isFocusOut(this);
 }
 
 void QGraphicsItemBasic::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
@@ -89,16 +100,40 @@ void QGraphicsItemBasic::dropEvent(QGraphicsSceneDragDropEvent* event)
 //------------------------------------------------------------------------------
 
 BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
-    : QGraphicsItemBasic(QPointF(x, y), QPointF(x + width / 2, y + height / 2), type)
-{
-    BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
-    point->setParentItem(this);
-    m_pointList.append(point);
-    m_itemedgePosInScene = point->pos();
+    : QGraphicsItemBasic(QPointF(x, y), QPointF(x + width / 2, y + height / 2), QList<QPointF>{QPointF(x + width / 2, y), QPointF(x, y + height / 2), QPointF(x, y - height / 2), QPointF(x - width / 2, y)}, type)
+{   // 注意m_edges初始化要使得相对的点下标和为3，否则在setEdges()时会出错
+    m_semiMajorAxis = width / 2;
+    m_semiMinorAxis = height / 2;
+    for each (QPointF var in m_edges)
+    {
+        BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
+        point->setParentItem(this);
+        m_pointList.append(point);
+        m_itemedgePosInScene.append(point->pos());
+    }
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
     setAcceptDrops(true);
 }
+
+void BEllipse::setEdges(QList<QPointF> p , int i)
+{
+    if (p.size() == 4) {
+        m_edges = p;
+        // 更新椭圆的两个顶点坐标
+        QPointF base = QPointF(m_edges[3 - i].x(), m_edges[3 - i].y()); //注意构造函数初始化列表m_edges初始化的顺序，对应的点下标和为3
+        QPointF newpoint = QPointF(m_edges[i].x(), m_edges[i].y());
+        m_center = (base + newpoint) / 2;
+
+        
+        //qreal edgeX = qAbs(bottomRight.x() - topLeft.x()) / 2;
+        //qreal edgeY = qAbs(bottomRight.y() - topLeft.y()) / 2;
+        //m_edge = QPointF(edgeX, edgeY);
+        // 重新计算椭圆的绘图方式
+        update();
+    }
+}
+
 
 QRectF BEllipse::boundingRect() const
 {
@@ -124,7 +159,7 @@ void BEllipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 
     QRectF ret(m_center.x() - abs(m_edge.x()), m_center.y() - abs(m_edge.y()), abs(m_edge.x()) * 2, abs(m_edge.y()) * 2);
 
-    //painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
 
     painter->drawEllipse(ret);
 }
@@ -205,8 +240,17 @@ void BEllipse::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 //------------------------------------------------------------------------------
 
 BCircle::BCircle(qreal x, qreal y, qreal radius, ItemType type)
-    : BEllipse(x, y, radius* sqrt(2), radius* sqrt(2), type)
+    : QGraphicsItemBasic(QPointF(x, y), QPointF(x + radius * sqrt(2) / 2, y + radius * sqrt(2) / 2), QList<QPointF>{QPointF(x + radius, y), QPointF(x - radius, y), QPointF(x, y + radius), QPointF(x, y - radius)}, type)
 {
+    for each (QPointF var in m_edges)
+    {
+        BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
+        point->setParentItem(this);
+        m_pointList.append(point);
+        m_itemedgePosInScene.append(point->pos());
+    }
+    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    m_pointList.setRandColor();
     setAcceptDrops(true);
     updateRadius();
 }
@@ -301,23 +345,24 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 //------------------------------------------------------------------------------
 
-BPie::BPie(qreal x, qreal y, qreal radius, qreal angle, ItemType type)
-    : BCircle(x, y, radius, type), m_endAngle(angle)
+BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type)
+    : QGraphicsItemBasic(QPointF(x, y), QPointF(x + radius * sqrt(2) / 2, y + radius * sqrt(2) / 2), QList<QPointF>{}, type), m_startAngle(startangle), m_endAngle(endangle)
 {
-    m_startAngle = 0;
-    if ((angle >= 0 && angle < 90) || (angle >= 270 && angle < 360))
-    {
-        m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
-        m_edge.setY(m_center.y() + radius * sin(angle / 180 * PI) * (-1));
-    }
-    else if ((angle >= 90 && angle < 270))
-    {
-        m_edge.setY(m_center.y() + radius * sin(angle / 180 * PI) * (-1));
-        m_edge.setX(m_center.x() + radius * cos(angle / 180 * PI));
-    }
 
-    m_pointList.at(0)->setPoint(m_edge);
-    m_itemedgePosInScene = m_edge;
+    QPointF p = QPointF((m_center.x() + radius * cos(startangle / 180 * M_PI)), (m_center.y() + radius * sin(startangle / 180 * M_PI) * (-1)));
+    BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
+    point->setParentItem(this);
+    m_pointList.append(point);
+    m_itemedgePosInScene.append(point->pos());
+
+    p = QPointF((m_center.x() + radius * cos(m_endAngle / 180 * M_PI)), (m_center.y() + radius * sin(m_endAngle / 180 * M_PI) * (-1)));
+    point = new BPointItem(this, p, BPointItem::PointType::Edge);
+    point->setParentItem(this);
+    m_pointList.append(point);
+    m_itemedgePosInScene.append(point->pos()); 
+    
+    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    m_pointList.setRandColor();
     m_radius = radius;
 }
 
@@ -328,19 +373,19 @@ void BPie::updateAngle()
 
     if (dx >= 0 && dy < 0)
     {
-        m_endAngle = atan2((-1) * (dy), dx) * 180 / PI;
+        m_endAngle = atan2((-1) * (dy), dx) * 180 / M_PI;
     }
     else if (dx < 0 && dy < 0)
     {
-        m_endAngle = atan2((-1) * dy, dx) * 180 / PI;
+        m_endAngle = atan2((-1) * dy, dx) * 180 / M_PI;
     }
     else if (dx < 0 && dy >= 0)
     {
-        m_endAngle = 360 + atan2((-1) * dy, dx) * 180 / PI;
+        m_endAngle = 360 + atan2((-1) * dy, dx) * 180 / M_PI;
     }
     else if (dx >= 0 && dy >= 0)
     {
-        m_endAngle = 360 - atan2(dy, dx) * 180 / PI;
+        m_endAngle = 360 - atan2(dy, dx) * 180 / M_PI;
     }
 }
 
@@ -378,12 +423,15 @@ void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
 //------------------------------------------------------------------------------
 
 BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType type)
-    : QGraphicsItemBasic(QPointF(x, y), QPointF(width / 2, height / 2), type)
+    : QGraphicsItemBasic(QPointF(x, y), QPointF(width / 2, height / 2), QList<QPointF>{QPointF(width / 2, height / 2), QPointF(width / 2, - height / 2), QPointF(- width / 2, height / 2), QPointF(- width / 2, - height / 2)}, type)
 {
-    BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
-    point->setParentItem(this);
-    m_pointList.append(point);
-    m_itemedgePosInScene = point->pos();
+    for each (QPointF var in m_edges)
+    {
+        BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
+        point->setParentItem(this);
+        m_pointList.append(point);
+        m_itemedgePosInScene.append(point->pos());
+    }
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
     setAcceptDrops(true);
@@ -543,13 +591,16 @@ void BSquare::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 //------------------------------------------------------------------------------
 
 BLine::BLine(QPointF startPoint, QPointF endPoint, ItemType type)
-    : QGraphicsItemBasic(startPoint, endPoint, type)
+    : QGraphicsItemBasic(startPoint, endPoint, QList<QPointF>{startPoint, endPoint}, type)
 {
-    BPointItem* point = new BPointItem(this, m_edge, BPointItem::PointType::Edge);
-    point->setParentItem(this);
-    m_pointList.append(point);
-    m_itemedgePosInScene = point->pos();
-    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+    for each (QPointF var in m_edges)
+    {
+        BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
+        point->setParentItem(this);
+        m_pointList.append(point);
+        m_itemedgePosInScene.append(point->pos());
+    }
+    //m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
     setAcceptDrops(true);
 }
@@ -590,7 +641,7 @@ void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWi
 //------------------------------------------------------------------------------
 
 BPoint::BPoint(QPointF position, ItemType type)
-    : QGraphicsItemBasic(position, position, type), m_position(position)
+    : QGraphicsItemBasic(position, position, QList<QPointF>{position}, type), m_position(position)
 {
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
