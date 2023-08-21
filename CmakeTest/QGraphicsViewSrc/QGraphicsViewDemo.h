@@ -36,11 +36,15 @@ private slots:
 
     void on_pointBtn_clicked();
 
+    void on_polygonBtn_clicked();
+
     //void on_showColorItem_clicked();
 
     void on_itemFocusIn(QGraphicsItemBasic* i);
 
     void on_itemFocusOut(QGraphicsItemBasic* i);
+
+    void setBtnEnabled(bool enable);
 
 private:
     Ui::QGraphicsViewDemo ui;
@@ -50,6 +54,16 @@ private:
 
     QDockWidget* leftNavigationDock;
     QDockWidget* rightNavigationDock;
+
+    QPushButton* circleBtn;
+    QPushButton* ellipseBtn;
+    QPushButton* pieBtn;
+    QPushButton* squareBtn;
+    QPushButton* rectangleBtn;
+    QPushButton* lineBtn;
+    QPushButton* pointBtn;
+    QPushButton* polygonBtn;
+    QPushButton* clearBtn;
 
     bool m_showColorItem;
 

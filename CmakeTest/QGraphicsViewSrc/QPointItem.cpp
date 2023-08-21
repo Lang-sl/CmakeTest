@@ -59,13 +59,19 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         case PointType::Center: {
             item->moveBy(dx, dy);
             this->scene()->update();
-            item->setItemPosInScene(item->pos());
+            if (itemType == QGraphicsItemBasic::ItemType::Polygon)
+            {
+                BPolygon* polygon = dynamic_cast<BPolygon*>(item);
+                polygon->setItemPosInScene(this->mapToScene(polygon->getCentroid(polygon->m_pointList.getQPointFList())) - polygon->getCenter());
+            }
+            else
+                item->setItemPosInScene(item->pos());
             QList<QPointF> listP;
             for each (BPointItem* pointI in (item->m_pointList))
             {
                 if (pointI->m_type == PointType::Edge)
                 {
-                    listP.append(this->mapToScene(pointI->pos()));
+                    listP.append(this->mapToScene(pointI->pos()) - item->getCenter());
                 }
             }
             item->setItemedgePosInScene(listP);
@@ -75,14 +81,14 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
-
-            item->setItemPosInScene(item->pos());
+            if (itemType != QGraphicsItemBasic::ItemType::Polygon)
+                item->setItemPosInScene(item->pos());
             QList<QPointF> listP;
             for each (BPointItem* pointI in (item->m_pointList))
             {
                 if (pointI->m_type == PointType::Edge)
                 {
-                    listP.append(this->mapToScene(pointI->pos()));
+                    listP.append(item->m_pointList.at(item->m_pointList.size() - 1)->mapToScene(pointI->pos()) - item->getCenter());
                 }
             }
             item->setItemedgePosInScene(listP);
@@ -123,12 +129,22 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
                 BLine* line = dynamic_cast<BLine*>(item);
                 //line->setEdges(m_point);
             } break;
+            case QGraphicsItemBasic::ItemType::Polygon: {
+                BPolygon* polygon = dynamic_cast<BPolygon*>(item);
+                polygon->updatePolygon(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+            } break;
             default: break;
             }
         } break;
         default: break;
         }
     }
+}
+
+void BPointItem::focusInEvent(QFocusEvent* event)
+{
+    QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(this->parentItem());
+    item->focusInEvent(nullptr);
 }
 
 void BPointItem::focusOutEvent(QFocusEvent* event)
@@ -158,5 +174,14 @@ void BPointItemList::setVisible(bool visible)
     {
         temp->setVisible(visible);
     }
+}
+
+QList<QPointF> BPointItemList::getQPointFList()
+{
+    QList<QPointF> list;
+    for (auto& temp : *this) {
+        list.append(temp->getPoint());
+    }
+    return list;
 }
 

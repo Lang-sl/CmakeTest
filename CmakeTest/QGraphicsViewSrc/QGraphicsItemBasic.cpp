@@ -48,8 +48,11 @@ int QGraphicsItemBasic::getEdgeIndex(BPointItem* pointItem) const
 
 void QGraphicsItemBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
-    m_itemPosInScene = this->pos();
-    m_itemedgePosInScene += (event->pos()- event->lastScenePos());
+    m_itemPosInScene += (event->scenePos() - event->lastScenePos());
+    for (int i = 0; i < m_itemedgePosInScene.size(); ++i) {
+        m_itemedgePosInScene[i] += (event->scenePos() - event->lastScenePos());
+    }
+    //m_itemedgePosInScene += (event->scenePos()- event->lastScenePos());
     emit isFocusIn(this);
     QAbstractGraphicsShapeItem::mouseMoveEvent(event);
 }
@@ -665,4 +668,153 @@ void BPoint::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QW
 
     qreal size = 3.0; // 设置点的大小
     painter->drawEllipse(m_position, size, size);
+}
+
+//------------------------------------------------------------------------------
+
+BPolygon::BPolygon(ItemType type)
+    : QGraphicsItemBasic(QPointF(0, 0), QPointF(0, 0), QList<QPointF>{}, type)
+{
+    is_create_finished = false;
+}
+
+void BPolygon::pushPoint(QPointF p, QList<QPointF> list, bool isCenter)
+{
+    if (!is_create_finished) {
+        m_center = getCentroid(list);
+        getMaxLength();
+
+        if (isCenter) {
+            m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+            m_pointList.setRandColor();
+            is_create_finished = true;
+            this->setItemPosInScene(m_center);
+        }
+        else {
+            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
+            point->setParentItem(this);
+            m_pointList.append(point);
+            m_itemedgePosInScene.append(point->pos());
+            m_pointList.setColor(QColor(0, 255, 0));
+        }
+
+        this->update();
+    }
+}
+
+QPointF BPolygon::getCentroid(QList<QPointF> list)
+{
+    qreal x = 0;
+    qreal y = 0;
+    for (auto& temp : list)
+    {
+        x += temp.x();
+        y += temp.y();
+    }
+    x = x / list.size();
+    y = y / list.size();
+
+    return QPointF(x, y);
+    //return this->getCenter();
+}
+
+void BPolygon::getMaxLength()
+{
+    QVector<qreal> vec;
+    for (auto& temp : m_pointList)
+    {
+        qreal dis = sqrt(pow(m_center.x() - temp->x(), 2) + pow(m_center.y() - temp->y(), 2));
+        vec.append(dis);
+    }
+
+    qreal ret = 0;
+    for (auto& temp : vec)
+    {
+        if (temp > ret) {
+            ret = temp;
+        }
+    }
+    m_radius = ret;
+}
+
+void BPolygon::updatePolygon(QPointF origin, QPointF end)
+{
+    QList<QPointF> list;
+
+    for (auto& temp : m_pointList) {
+        if (temp->getPoint() == origin) {
+            temp->setPoint(end);
+
+        }
+        list.append(temp->getPoint());
+    }
+
+    m_center = getCentroid(list);
+
+    setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
+
+
+    m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
+
+    getMaxLength();
+
+    //update();
+}
+
+QRectF BPolygon::boundingRect() const
+{
+    return QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
+}
+
+QPainterPath BPolygon::shape() const
+{
+    QPainterPath m_path;
+    m_path.moveTo(m_pointList.at(0)->getPoint());
+
+    if (is_create_finished) {
+        for (int i = 1; i < m_pointList.size() - 1; i++)
+        {
+            m_path.lineTo(m_pointList.at(i)->getPoint());
+            m_path.moveTo(m_pointList.at(i)->getPoint());
+        }
+
+        m_path.lineTo(m_pointList.at(0)->getPoint());
+    }
+    else {
+        for (int i = 1; i < m_pointList.size(); i++)
+        {
+            m_path.lineTo(m_pointList.at(i)->getPoint());
+            m_path.moveTo(m_pointList.at(i)->getPoint());
+        }
+    }
+   
+
+    QPainterPathStroker stroker;
+    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+    return stroker.createStroke(m_path);
+}
+
+void BPolygon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    painter->setPen(this->pen());
+    painter->setBrush(this->brush());
+
+    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+
+    if (is_create_finished) {
+        for (int i = 1; i < m_pointList.size() - 1; i++)
+        {
+            painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
+        }
+
+        painter->drawLine(m_pointList.at(m_pointList.size() - 2)->getPoint(), m_pointList.at(0)->getPoint());
+    }
+    else {
+        for (int i = 1; i < m_pointList.size(); i++)
+        {
+            painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
+        }
+    }
 }

@@ -37,6 +37,7 @@ protected:
 
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
+    virtual void focusInEvent(QFocusEvent* event) override;
     virtual void focusOutEvent(QFocusEvent* event) override;
 
 public:
@@ -55,4 +56,5 @@ public:
     void setRandColor();
     void setColor(const QColor color);
     void setVisible(bool visible);
+    QList<QPointF> getQPointFList();
 };

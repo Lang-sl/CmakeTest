@@ -63,14 +63,15 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     //ui->graphicsView->setScene(&m_scene);
 
     //QPushButton* showColorBtn = new QPushButton(tr("颜色显示"), leftNavigationDock);
-    QPushButton* circleBtn = new QPushButton(tr("圆"), leftNavigationDock);
-    QPushButton* ellipseBtn = new QPushButton(tr("椭圆"), leftNavigationDock);
-    QPushButton* pieBtn = new QPushButton(tr("圆弧"), leftNavigationDock);
-    QPushButton* squareBtn = new QPushButton(tr("正方形"), leftNavigationDock);
-    QPushButton* rectangleBtn = new QPushButton(tr("矩形"), leftNavigationDock);
-    QPushButton* lineBtn = new QPushButton(tr("直线"), leftNavigationDock);
-    QPushButton* pointBtn = new QPushButton(tr("点"), leftNavigationDock);
-    QPushButton* clearBtn = new QPushButton(tr("清空"), leftNavigationDock);
+    circleBtn = new QPushButton(tr("圆"), leftNavigationDock);
+    ellipseBtn = new QPushButton(tr("椭圆"), leftNavigationDock);
+    pieBtn = new QPushButton(tr("圆弧"), leftNavigationDock);
+    squareBtn = new QPushButton(tr("正方形"), leftNavigationDock);
+    rectangleBtn = new QPushButton(tr("矩形"), leftNavigationDock);
+    lineBtn = new QPushButton(tr("直线"), leftNavigationDock);
+    pointBtn = new QPushButton(tr("点"), leftNavigationDock);
+    polygonBtn = new QPushButton(tr("多边形"), leftNavigationDock);
+    clearBtn = new QPushButton(tr("清空"), leftNavigationDock);
 
     QVBoxLayout* btnlayout = new QVBoxLayout(leftNavigationDock);
 
@@ -83,6 +84,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     btnlayout->addWidget(rectangleBtn);
     btnlayout->addWidget(lineBtn);
     btnlayout->addWidget(pointBtn);
+    btnlayout->addWidget(polygonBtn);
     btnlayout->addWidget(clearBtn);
     btnlayout->addItem(spacer);
 
@@ -99,6 +101,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     connect(lineBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_lineBtn_clicked);
     connect(pointBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_pointBtn_clicked);
     connect(pieBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_pieBtn_clicked);
+    connect(polygonBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_polygonBtn_clicked);
 }
 
 QGraphicsViewDemo::~QGraphicsViewDemo()
@@ -170,6 +173,20 @@ void QGraphicsViewDemo::on_pointBtn_clicked()
     connect(m_point, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
+void QGraphicsViewDemo::on_polygonBtn_clicked()
+{
+    m_scene->startCreate();
+    setBtnEnabled(false);
+    BPolygon* m_polygon = new BPolygon(QGraphicsItemBasic::ItemType::Polygon);
+    m_scene->addItem(m_polygon);
+
+    connect(m_polygon, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_polygon, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
+
+    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, bool)), m_polygon, SLOT(pushPoint(QPointF, QList<QPointF>, bool)));
+    connect(m_scene, &QGraphicsSceneBasic::createFinished, [=]() { setBtnEnabled(true); });
+}
+
 //void QGraphicsViewDemo::on_showColorItem_clicked()
 //{
 //    m_showColorItem = !m_showColorItem;
@@ -239,6 +256,60 @@ void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
         //edge_x->setText(QString::number(point->getItemedgePosInScene().x()));
         //edge_y->setText(QString::number(point->getItemedgePosInScene().y()));
     } break;
+    case QGraphicsItemBasic::ItemType::Polygon: {
+        BPolygon* polygon = dynamic_cast<BPolygon*>(item);
+        type->setText("多边形");
+        center_x->setText(QString::number(polygon->getItemPosInScene().x()));
+        center_y->setText(QString::number(polygon->getItemPosInScene().y()));
+        edge_x->setText(QString::number(polygon->getItemedgePosInScene()[0].x()));
+        edge_y->setText(QString::number(polygon->getItemedgePosInScene()[0].y()));
+        connect(center_x, &QLineEdit::editingFinished, [=]()
+            {
+                polygon->moveBy(center_x->text().toDouble() - polygon->getItemPosInScene().x(), 0);
+                polygon->setItemPosInScene(QPointF(center_x->text().toDouble(), polygon->getItemPosInScene().y()));
+                QList<QPointF> listP;
+                for each (BPointItem * pointI in (polygon->m_pointList))
+                {
+                    if (pointI->m_type == BPointItem::PointType::Edge)
+                    {
+                        listP.append(polygon->m_pointList.at(polygon->m_pointList.size() - 1)->mapToScene(pointI->pos()) - polygon->getCenter());
+                    }
+                }
+                polygon->setItemedgePosInScene(listP);
+            });
+        connect(center_y, &QLineEdit::editingFinished, [=]()
+            {
+                polygon->moveBy(0, center_y->text().toDouble() - polygon->getItemPosInScene().y());
+                polygon->setItemPosInScene(QPointF(polygon->getItemPosInScene().x(), center_y->text().toDouble()));
+                QList<QPointF> listP;
+                for each (BPointItem * pointI in (polygon->m_pointList))
+                {
+                    if (pointI->m_type == BPointItem::PointType::Edge)
+                    {
+                        listP.append(polygon->m_pointList.at(polygon->m_pointList.size() - 1)->mapToScene(pointI->pos()) - polygon->getCenter());
+                    }
+                }
+                polygon->setItemedgePosInScene(listP);
+            });
+        connect(edge_x, &QLineEdit::editingFinished, [=]() 
+            {
+                QPointF origin = polygon->getItemedgePosInScene()[0];
+                QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
+                polygon->updatePolygon(polygon->mapFromScene(origin), polygon->mapFromScene(end));
+                polygon->m_itemedgePosInScene[0] += end - origin;
+                
+            });
+        connect(edge_y, &QLineEdit::editingFinished, [=]()
+            {
+                /*QPointF temp = QPointF(0, edge_y->text().toDouble() - polygon->getItemedgePosInScene().at(0).y());
+                polygon->m_pointList[0]->m_point += temp;
+                polygon->m_itemedgePosInScene[0] += temp;*/
+                QPointF origin = polygon->getItemedgePosInScene()[0];
+                QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
+                polygon->updatePolygon(polygon->mapFromScene(origin), polygon->mapFromScene(end));
+                polygon->m_itemedgePosInScene[0] += end - origin;
+            });
+    } break;
     default: break;
     }
     rightNavigationDock->show();
@@ -255,7 +326,7 @@ void QGraphicsViewDemo::on_itemFocusOut(QGraphicsItemBasic* i)
     }
     if (rightNavigationDock->hasFocus() || isFocus)
     {
-        ;
+        i->focusInEvent(nullptr);
     }
     else
     {
@@ -264,18 +335,14 @@ void QGraphicsViewDemo::on_itemFocusOut(QGraphicsItemBasic* i)
 }
 
 
-//void QGraphicsViewDemo::setBtnEnabled(bool enable)
-//{
-//    ui->circleBtn->setEnabled(enable);
-//    ui->ellipseBtn->setEnabled(enable);
-//    ui->conCircleBtn->setEnabled(enable);
-//    ui->pieBtn->setEnabled(enable);
-//    ui->chordBtn->setEnabled(enable);
-//    ui->squareBtn->setEnabled(enable);
-//    ui->rectangleBtn->setEnabled(enable);
-//    ui->roundRecBtn->setEnabled(enable);
-//    ui->rnRecBtn->setEnabled(enable);
-//    ui->clearBtn->setEnabled(enable);
-//    ui->saveBtn->setEnabled(enable);
-//    ui->loadBtn->setEnabled(enable);
-//}
+void QGraphicsViewDemo::setBtnEnabled(bool enable)
+{
+    circleBtn->setEnabled(enable);
+    ellipseBtn->setEnabled(enable);
+    pieBtn->setEnabled(enable);
+    squareBtn->setEnabled(enable);
+    rectangleBtn->setEnabled(enable);
+    lineBtn->setEnabled(enable);
+    pointBtn->setEnabled(enable);
+    clearBtn->setEnabled(enable);
+}

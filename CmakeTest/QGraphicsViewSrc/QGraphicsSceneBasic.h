@@ -12,12 +12,17 @@ class QGraphicsSceneBasic : public QGraphicsScene
 public:
     QGraphicsSceneBasic(QObject* parent = nullptr);
 
+    void startCreate();
+
     void addColorItem();
 
     void addCoordinateSystem();
 
     void isShowColorItem(bool b);
-    
+
+protected:
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+  
 signals:
     void updatePoint(QPointF p, QList<QPointF> list, bool isCenter);
     void createFinished();

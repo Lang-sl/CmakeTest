@@ -34,7 +34,8 @@ public:
         Rectangle,          // 矩形
         Square,             // 正方形
         Line,               // 直线
-        Point               // 点
+        Point,              // 点
+        Polygon             // 多边形
     };
 
     QGraphicsItemBasic() { ; }
@@ -96,6 +97,7 @@ protected:
 
     bool m_dragOver;
 
+    friend class QGraphicsViewDemo;
 };
 //------------------------------------------------------------------------------
 
@@ -281,4 +283,35 @@ protected:
 
 private:
     QPointF m_position;
+};
+
+//------------------------------------------------------------------------------
+
+// 多边形
+class BPolygon : public QGraphicsItemBasic
+{
+    Q_OBJECT
+
+public:
+    BPolygon(ItemType type);
+
+    QPointF getCentroid(QList<QPointF> list);
+    void getMaxLength();
+    void updatePolygon(QPointF origin, QPointF end);
+
+public slots:
+    void pushPoint(QPointF p, QList<QPointF> list, bool isCenter);
+
+protected:
+    virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
+
+    virtual void paint(QPainter* painter,
+        const QStyleOptionGraphicsItem* option,
+        QWidget* widget) override;
+
+public:
+    qreal m_radius;
+    bool is_create_finished;
 };
