@@ -18,6 +18,7 @@
 
 #define SELECTOFFSET 5 
 #define SELECTWIDTH 10 // 选中线框的宽度
+#define MIXRADIUS 50   // 混合线框默认半径
 
 // 自定义图元 - 基础类
 class QGraphicsItemBasic : public QObject, public QAbstractGraphicsShapeItem
@@ -35,7 +36,8 @@ public:
         Square,             // 正方形
         Line,               // 直线
         Point,              // 点
-        Polygon             // 多边形
+        Polygon,            // 多边形
+        MixArcLine          // 圆弧直线混合
     };
 
     QGraphicsItemBasic() { ; }
@@ -313,4 +315,41 @@ protected:
 public:
     qreal m_radius;
     bool is_create_finished;
+};
+
+//------------------------------------------------------------------------------
+
+// 多边形
+class BMixArcLine : public BPolygon
+{
+    Q_OBJECT
+
+public:
+    BMixArcLine(ItemType type);
+
+    enum class PointType {
+        LineEdgeEnd = 0,         // 直线终点
+        ArcEdgeEnd,              // 圆弧终点
+        Center                   // 质心
+    };
+
+    void updateMixArcLine(QPointF origin, QPointF end);
+
+public slots:
+    void pushPoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
+
+    void movePoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
+
+protected:
+
+    virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
+
+    virtual void paint(QPainter* painter,
+        const QStyleOptionGraphicsItem* option,
+        QWidget* widget) override;
+
+public:
+    QList<qreal> m_radiuses;
 };

@@ -18,6 +18,9 @@ BPointItem::BPointItem(QAbstractGraphicsShapeItem* parent, QPointF p, PointType 
     case PointType::Edge:
         this->setCursor(Qt::PointingHandCursor);
         break;
+    case PointType::Special:
+        this->setCursor(Qt::PointingHandCursor);
+        break;
     default: break;
     }
 }
@@ -40,6 +43,9 @@ void BPointItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
         painter->drawEllipse(-4, -4, 8, 8);
         break;
     case PointType::Edge:
+        painter->drawRect(QRectF(-4, -4, 8, 8));
+        break;
+    case PointType::Special:
         painter->drawRect(QRectF(-4, -4, 8, 8));
         break;
     default: break;
@@ -90,7 +96,7 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
                 m_point.setX(intersectPoint.x());
                 m_point.setY(intersectPoint.y());
-                pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+                //pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
                 pie->updateAngle(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), m_point);
             } break;
             case QGraphicsItemBasic::ItemType::Rectangle: {
@@ -111,6 +117,28 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             case QGraphicsItemBasic::ItemType::Polygon: {
                 BPolygon* polygon = dynamic_cast<BPolygon*>(item);
                 polygon->updatePolygon(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+            } break;
+            default: break;
+            }
+        } break;
+        case PointType::Special: {
+            switch (itemType) {
+            case QGraphicsItemBasic::ItemType::Pie: {
+                m_point = this->mapToParent(event->pos());
+                this->setPos(m_point);
+                this->scene()->update();
+                item->focusInEvent(nullptr);
+
+                BPie* pie = dynamic_cast<BPie*>(item);
+
+                /*QLineF line(pie->getCenter(), m_point);
+                line.setLength(pie->m_radius);
+                QPointF intersectPoint = line.p2();
+
+                m_point.setX(intersectPoint.x());
+                m_point.setY(intersectPoint.y());*/
+                pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+                //pie->updateAngle(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), m_point);
             } break;
             default: break;
             }

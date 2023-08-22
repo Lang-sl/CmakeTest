@@ -12,7 +12,9 @@ class QGraphicsSceneBasic : public QGraphicsScene
 public:
     QGraphicsSceneBasic(QObject* parent = nullptr);
 
-    void startCreate();
+    void startCreateBPolygon();
+
+    void startCreateBMixArcLine();
 
     void addColorItem();
 
@@ -21,14 +23,24 @@ public:
     void isShowColorItem(bool b);
 
 protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+
+    virtual void wheelEvent(QGraphicsSceneWheelEvent* event) override;
   
 signals:
     void updatePoint(QPointF p, QList<QPointF> list, bool isCenter);
-    void createFinished();
+    void updatePoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
+    void movePoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
+    void createBPolygonFinished();
+    void createBMixArcLineFinished();
 
 protected:
     QList<QPointF> m_list;
     QList<ColorItem*> m_colorItemList;
     bool is_creating_BPolygon;
+
+    bool is_creating_BMixArcLine;
+    bool ArcOrLine; // false Ϊ line , true Ϊ arc
 };
