@@ -201,113 +201,58 @@ void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
     switch (itemType) {
     case QGraphicsItemBasic::ItemType::Ellipse: {
         BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
-        type->setText("椭圆");
-        //center_x->setText(QString("(x: %1,y: %2)").arg(QString::number(ellipse->getCenter().x())).arg(QString::number(ellipse->getCenter().y())));
-        center_x->setText(QString::number(ellipse->getItemPosInScene().x()));
-        center_y->setText(QString::number(ellipse->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(ellipse->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(ellipse->getItemedgePosInScene().y()));
+        updateConfig(ellipse);
     } break;
     case QGraphicsItemBasic::ItemType::Circle: {
         BCircle* circle = dynamic_cast<BCircle*>(item);
-        type->setText("圆");
-        center_x->setText(QString::number(circle->getItemPosInScene().x()));
-        center_y->setText(QString::number(circle->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(circle->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(circle->getItemedgePosInScene().y()));
+        updateConfig(circle);
     } break;
     case QGraphicsItemBasic::ItemType::Pie: {
         BPie* pie = dynamic_cast<BPie*>(item);
-        type->setText("圆弧");
-        center_x->setText(QString::number(pie->getItemPosInScene().x()));
-        center_y->setText(QString::number(pie->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(pie->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(pie->getItemedgePosInScene().y()));
+        updateConfig(pie);
     } break;
     case QGraphicsItemBasic::ItemType::Rectangle: {
         BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
-        type->setText("矩形");
-        center_x->setText(QString::number(rectangle->getItemPosInScene().x()));
-        center_y->setText(QString::number(rectangle->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(rectangle->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(rectangle->getItemedgePosInScene().y()));
+        updateConfig(rectangle);
     } break;
     case QGraphicsItemBasic::ItemType::Square: {
         BSquare* square = dynamic_cast<BSquare*>(item);
-        type->setText("正方形");
-        center_x->setText(QString::number(square->getItemPosInScene().x()));
-        center_y->setText(QString::number(square->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(square->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(square->getItemedgePosInScene().y()));
+        updateConfig(square);
     } break;
     case QGraphicsItemBasic::ItemType::Line: {
         BLine* line = dynamic_cast<BLine*>(item);
-        type->setText("直线");
-        center_x->setText(QString::number(line->getItemPosInScene().x()));
-        center_y->setText(QString::number(line->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(line->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(line->getItemedgePosInScene().y()));
+        updateConfig(line);
     } break;
     case QGraphicsItemBasic::ItemType::Point: {
         BPoint* point = dynamic_cast<BPoint*>(item);
-        type->setText("点");
-        center_x->setText(QString::number(point->getItemPosInScene().x()));
-        center_y->setText(QString::number(point->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(point->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(point->getItemedgePosInScene().y()));
+        updateConfig(point);
     } break;
     case QGraphicsItemBasic::ItemType::Polygon: {
         BPolygon* polygon = dynamic_cast<BPolygon*>(item);
-        type->setText("多边形");
-        center_x->setText(QString::number(polygon->getItemPosInScene().x()));
-        center_y->setText(QString::number(polygon->getItemPosInScene().y()));
-        edge_x->setText(QString::number(polygon->getItemedgePosInScene()[0].x()));
-        edge_y->setText(QString::number(polygon->getItemedgePosInScene()[0].y()));
+        updateConfig(polygon);
         connect(center_x, &QLineEdit::editingFinished, [=]()
             {
-                polygon->moveBy(center_x->text().toDouble() - polygon->getItemPosInScene().x(), 0);
-                polygon->setItemPosInScene(QPointF(center_x->text().toDouble(), polygon->getItemPosInScene().y()));
-                QList<QPointF> listP;
-                for each (BPointItem * pointI in (polygon->m_pointList))
-                {
-                    if (pointI->m_type == BPointItem::PointType::Edge)
-                    {
-                        listP.append(polygon->m_pointList.at(polygon->m_pointList.size() - 1)->mapToScene(pointI->pos()) - polygon->getCenter());
-                    }
-                }
-                polygon->setItemedgePosInScene(listP);
+                polygon->moveBy(center_x->text().toDouble() - polygon->mapToScene(polygon->getCenter()).x(), 0);
+                updateConfig(polygon);
             });
         connect(center_y, &QLineEdit::editingFinished, [=]()
             {
-                polygon->moveBy(0, center_y->text().toDouble() - polygon->getItemPosInScene().y());
-                polygon->setItemPosInScene(QPointF(polygon->getItemPosInScene().x(), center_y->text().toDouble()));
-                QList<QPointF> listP;
-                for each (BPointItem * pointI in (polygon->m_pointList))
-                {
-                    if (pointI->m_type == BPointItem::PointType::Edge)
-                    {
-                        listP.append(polygon->m_pointList.at(polygon->m_pointList.size() - 1)->mapToScene(pointI->pos()) - polygon->getCenter());
-                    }
-                }
-                polygon->setItemedgePosInScene(listP);
+                polygon->moveBy(0, center_y->text().toDouble() - polygon->mapToScene(polygon->getCenter()).y());
+                updateConfig(polygon);
             });
         connect(edge_x, &QLineEdit::editingFinished, [=]() 
             {
-                QPointF origin = polygon->getItemedgePosInScene()[0];
+                QPointF origin = polygon->mapToScene(polygon->getPointList()[0]);
                 QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
-                polygon->updatePolygon(polygon->mapFromScene(origin), polygon->mapFromScene(end));
-                polygon->m_itemedgePosInScene[0] += end - origin;
-                
+                polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                updateConfig(polygon); 
             });
         connect(edge_y, &QLineEdit::editingFinished, [=]()
             {
-                /*QPointF temp = QPointF(0, edge_y->text().toDouble() - polygon->getItemedgePosInScene().at(0).y());
-                polygon->m_pointList[0]->m_point += temp;
-                polygon->m_itemedgePosInScene[0] += temp;*/
-                QPointF origin = polygon->getItemedgePosInScene()[0];
+                QPointF origin = polygon->mapToScene(polygon->getPointList()[0]);
                 QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
-                polygon->updatePolygon(polygon->mapFromScene(origin), polygon->mapFromScene(end));
-                polygon->m_itemedgePosInScene[0] += end - origin;
+                polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                updateConfig(polygon);
             });
     } break;
     default: break;
@@ -345,4 +290,78 @@ void QGraphicsViewDemo::setBtnEnabled(bool enable)
     lineBtn->setEnabled(enable);
     pointBtn->setEnabled(enable);
     clearBtn->setEnabled(enable);
+}
+
+void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
+{
+    QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(i);
+    QGraphicsItemBasic::ItemType itemType = item->getType();
+    switch (itemType) {
+    case QGraphicsItemBasic::ItemType::Ellipse: {
+        BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
+        type->setText("椭圆");
+        //center_x->setText(QString("(x: %1,y: %2)").arg(QString::number(ellipse->getCenter().x())).arg(QString::number(ellipse->getCenter().y())));
+        center_x->setText(QString::number(ellipse->mapToScene(ellipse->getCenter()).x()));
+        center_y->setText(QString::number(ellipse->mapToScene(ellipse->getCenter()).y()));
+        //edge_x->setText(QString::number(ellipse->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(ellipse->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Circle: {
+        BCircle* circle = dynamic_cast<BCircle*>(item);
+        type->setText("圆");
+        //center_x->setText(QString::number(circle->getItemPosInScene().x()));
+        //center_y->setText(QString::number(circle->getItemPosInScene().y()));
+        //edge_x->setText(QString::number(circle->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(circle->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Pie: {
+        BPie* pie = dynamic_cast<BPie*>(item);
+        type->setText("圆弧");
+        //center_x->setText(QString::number(pie->getItemPosInScene().x()));
+        //center_y->setText(QString::number(pie->getItemPosInScene().y()));
+        //edge_x->setText(QString::number(pie->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(pie->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Rectangle: {
+        BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
+        type->setText("矩形");
+        //center_x->setText(QString::number(rectangle->getItemPosInScene().x()));
+        //center_y->setText(QString::number(rectangle->getItemPosInScene().y()));
+        //edge_x->setText(QString::number(rectangle->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(rectangle->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Square: {
+        BSquare* square = dynamic_cast<BSquare*>(item);
+        type->setText("正方形");
+        //center_x->setText(QString::number(square->getItemPosInScene().x()));
+        //center_y->setText(QString::number(square->getItemPosInScene().y()));
+        //edge_x->setText(QString::number(square->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(square->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Line: {
+        BLine* line = dynamic_cast<BLine*>(item);
+        type->setText("直线");
+        //center_x->setText(QString::number(line->getItemPosInScene().x()));
+        //center_y->setText(QString::number(line->getItemPosInScene().y()));
+        //edge_x->setText(QString::number(line->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(line->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Point: {
+        BPoint* point = dynamic_cast<BPoint*>(item);
+        type->setText("点");
+        //center_x->setText(QString::number(point->getItemPosInScene().x()));
+        //center_y->setText(QString::number(point->getItemPosInScene().y()));
+        //edge_x->setText(QString::number(point->getItemedgePosInScene().x()));
+        //edge_y->setText(QString::number(point->getItemedgePosInScene().y()));
+    } break;
+    case QGraphicsItemBasic::ItemType::Polygon: {
+        BPolygon* polygon = dynamic_cast<BPolygon*>(item);
+        type->setText("多边形");
+        center_x->setText(QString::number(polygon->mapToScene(polygon->getCenter()).x()));
+        center_y->setText(QString::number(polygon->mapToScene(polygon->getCenter()).y()));
+        edge_x->setText(QString::number(polygon->mapToScene(polygon->getPointList()[0]).x()));
+        edge_y->setText(QString::number(polygon->mapToScene(polygon->getPointList()[0]).y()));
+    } break;
+    default: break;
+    }
 }

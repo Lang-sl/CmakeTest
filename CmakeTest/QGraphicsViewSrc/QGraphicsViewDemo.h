@@ -47,6 +47,8 @@ private slots:
     void setBtnEnabled(bool enable);
 
 private:
+    void updateConfig(QGraphicsItemBasic* i);
+    
     Ui::QGraphicsViewDemo ui;
 
     QGraphicsSceneBasic* m_scene;

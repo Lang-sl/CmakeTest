@@ -59,39 +59,12 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         case PointType::Center: {
             item->moveBy(dx, dy);
             this->scene()->update();
-            if (itemType == QGraphicsItemBasic::ItemType::Polygon)
-            {
-                BPolygon* polygon = dynamic_cast<BPolygon*>(item);
-                polygon->setItemPosInScene(this->mapToScene(polygon->getCentroid(polygon->m_pointList.getQPointFList())) - polygon->getCenter());
-            }
-            else
-                item->setItemPosInScene(item->pos());
-            QList<QPointF> listP;
-            for each (BPointItem* pointI in (item->m_pointList))
-            {
-                if (pointI->m_type == PointType::Edge)
-                {
-                    listP.append(this->mapToScene(pointI->pos()) - item->getCenter());
-                }
-            }
-            item->setItemedgePosInScene(listP);
             item->focusInEvent(nullptr);
         } break;
         case PointType::Edge: {
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
-            if (itemType != QGraphicsItemBasic::ItemType::Polygon)
-                item->setItemPosInScene(item->pos());
-            QList<QPointF> listP;
-            for each (BPointItem* pointI in (item->m_pointList))
-            {
-                if (pointI->m_type == PointType::Edge)
-                {
-                    listP.append(item->m_pointList.at(item->m_pointList.size() - 1)->mapToScene(pointI->pos()) - item->getCenter());
-                }
-            }
-            item->setItemedgePosInScene(listP);
             item->focusInEvent(nullptr);
             switch (itemType) {
             case QGraphicsItemBasic::ItemType::Ellipse: {

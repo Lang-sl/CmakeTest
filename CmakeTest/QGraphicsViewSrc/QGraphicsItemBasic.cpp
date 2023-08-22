@@ -14,7 +14,7 @@ QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPoin
     m_pen_isSelected.setWidth(2);
 
 
-    m_itemPosInScene = this->pos();
+    //m_itemPosInScene = this->pos();
     /*m_innercolor = QColor(Qt::gray);
     m_innercolor_copy = m_innercolor;*/
 
@@ -48,11 +48,6 @@ int QGraphicsItemBasic::getEdgeIndex(BPointItem* pointItem) const
 
 void QGraphicsItemBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
-    m_itemPosInScene += (event->scenePos() - event->lastScenePos());
-    for (int i = 0; i < m_itemedgePosInScene.size(); ++i) {
-        m_itemedgePosInScene[i] += (event->scenePos() - event->lastScenePos());
-    }
-    //m_itemedgePosInScene += (event->scenePos()- event->lastScenePos());
     emit isFocusIn(this);
     QAbstractGraphicsShapeItem::mouseMoveEvent(event);
 }
@@ -112,7 +107,7 @@ BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
         BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
         point->setParentItem(this);
         m_pointList.append(point);
-        m_itemedgePosInScene.append(point->pos());
+        //m_itemedgePosInScene.append(point->pos());
     }
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
@@ -121,20 +116,20 @@ BEllipse::BEllipse(qreal x, qreal y, qreal width, qreal height, ItemType type)
 
 void BEllipse::setEdges(QList<QPointF> p , int i)
 {
-    if (p.size() == 4) {
-        m_edges = p;
-        // 更新椭圆的两个顶点坐标
-        QPointF base = QPointF(m_edges[3 - i].x(), m_edges[3 - i].y()); //注意构造函数初始化列表m_edges初始化的顺序，对应的点下标和为3
-        QPointF newpoint = QPointF(m_edges[i].x(), m_edges[i].y());
-        m_center = (base + newpoint) / 2;
+    //if (p.size() == 4) {
+    //    m_edges = p;
+    //    // 更新椭圆的两个顶点坐标
+    //    QPointF base = QPointF(m_edges[3 - i].x(), m_edges[3 - i].y()); //注意构造函数初始化列表m_edges初始化的顺序，对应的点下标和为3
+    //    QPointF newpoint = QPointF(m_edges[i].x(), m_edges[i].y());
+    //    m_center = (base + newpoint) / 2;
 
-        
-        //qreal edgeX = qAbs(bottomRight.x() - topLeft.x()) / 2;
-        //qreal edgeY = qAbs(bottomRight.y() - topLeft.y()) / 2;
-        //m_edge = QPointF(edgeX, edgeY);
-        // 重新计算椭圆的绘图方式
-        update();
-    }
+    //    
+    //    //qreal edgeX = qAbs(bottomRight.x() - topLeft.x()) / 2;
+    //    //qreal edgeY = qAbs(bottomRight.y() - topLeft.y()) / 2;
+    //    //m_edge = QPointF(edgeX, edgeY);
+    //    // 重新计算椭圆的绘图方式
+    //    update();
+    //}
 }
 
 
@@ -250,7 +245,7 @@ BCircle::BCircle(qreal x, qreal y, qreal radius, ItemType type)
         BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
         point->setParentItem(this);
         m_pointList.append(point);
-        m_itemedgePosInScene.append(point->pos());
+        //m_itemedgePosInScene.append(point->pos());
     }
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
@@ -356,13 +351,13 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, Ite
     BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
-    m_itemedgePosInScene.append(point->pos());
+    //m_itemedgePosInScene.append(point->pos());
 
     p = QPointF((m_center.x() + radius * cos(m_endAngle / 180 * M_PI)), (m_center.y() + radius * sin(m_endAngle / 180 * M_PI) * (-1)));
     point = new BPointItem(this, p, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
-    m_itemedgePosInScene.append(point->pos()); 
+    //m_itemedgePosInScene.append(point->pos()); 
     
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
@@ -433,7 +428,7 @@ BRectangle::BRectangle(qreal x, qreal y, qreal width, qreal height, ItemType typ
         BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
         point->setParentItem(this);
         m_pointList.append(point);
-        m_itemedgePosInScene.append(point->pos());
+        //m_itemedgePosInScene.append(point->pos());
     }
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
@@ -601,7 +596,7 @@ BLine::BLine(QPointF startPoint, QPointF endPoint, ItemType type)
         BPointItem* point = new BPointItem(this, var, BPointItem::PointType::Edge);
         point->setParentItem(this);
         m_pointList.append(point);
-        m_itemedgePosInScene.append(point->pos());
+        //m_itemedgePosInScene.append(point->pos());
     }
     //m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
     m_pointList.setRandColor();
@@ -688,14 +683,19 @@ void BPolygon::pushPoint(QPointF p, QList<QPointF> list, bool isCenter)
             m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
             m_pointList.setRandColor();
             is_create_finished = true;
-            this->setItemPosInScene(m_center);
+            //this->setItemPosInScene(m_center);
         }
         else {
+            m_edges.append(p);
             BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
             point->setParentItem(this);
             m_pointList.append(point);
-            m_itemedgePosInScene.append(point->pos());
+
+            //m_itemedgePosInScene.append(point->pos());
             m_pointList.setColor(QColor(0, 255, 0));
+
+            m_center = getCentroid(list);
+            getMaxLength();
         }
 
         this->update();
@@ -751,18 +751,22 @@ void BPolygon::updatePolygon(QPointF origin, QPointF end)
 
     m_center = getCentroid(list);
 
-    setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
+    //setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
 
 
     m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
 
     getMaxLength();
 
-    //update();
+    update();
 }
 
 QRectF BPolygon::boundingRect() const
 {
+    /*if (!is_create_finished)
+    {
+        return QRect();
+    }*/
     return QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2);
 }
 
@@ -802,6 +806,7 @@ void BPolygon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
     painter->setBrush(this->brush());
 
     painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+    //painter->fillRect(boundingRect(), QBrush(QColor(99, 184, 255)));
 
     if (is_create_finished) {
         for (int i = 1; i < m_pointList.size() - 1; i++)

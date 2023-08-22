@@ -44,14 +44,11 @@ public:
     void setCenter(QPointF p) { m_center = p; }
 
     QList<QPointF> getEdges() { return m_edges; }
-    virtual void setEdges(QList<QPointF> p, int i) { m_edges = p; };
+    virtual void setEdges(QList<QPointF> p, int i) { m_edges = p; }
     int getEdgeIndex(BPointItem* pointItem) const;
 
-    QPointF getItemPosInScene() { return m_itemPosInScene; }
-    void setItemPosInScene(QPointF p) { m_itemPosInScene = p; }
 
-    QList<QPointF> getItemedgePosInScene() { return m_itemedgePosInScene; }
-    void setItemedgePosInScene(QList<QPointF> p) { m_itemedgePosInScene = p;}
+    QList<QPointF> getPointList() { return m_pointList.getQPointFList(); }
 
     ItemType getType() { return m_type; }
 
@@ -77,8 +74,8 @@ protected:
     virtual void focusInEvent(QFocusEvent* event) override;
     virtual void focusOutEvent(QFocusEvent* event) override;
 
-    QPointF m_itemPosInScene;
-    QList<QPointF> m_itemedgePosInScene;
+    /*QPointF m_itemPosInScene;
+    QList<QPointF> m_itemedgePosInScene;*/
 
     BPointItemList m_pointList;
 
