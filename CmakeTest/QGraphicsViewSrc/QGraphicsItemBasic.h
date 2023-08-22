@@ -193,7 +193,9 @@ class BPie : public QGraphicsItemBasic
 public:
     BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
 
-    void updateAngle();
+    void updateAngle(QPointF origin, QPointF end);
+
+    void updateRadius(QPointF origin, QPointF end);
 
 protected:
 

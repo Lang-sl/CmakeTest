@@ -127,7 +127,7 @@ void QGraphicsViewDemo::on_ellipseBtn_clicked()
 
 void QGraphicsViewDemo::on_pieBtn_clicked()
 {
-    BPie* m_pie = new BPie(0, 0, 80, 0, 30, QGraphicsItemBasic::ItemType::Pie);
+    BPie* m_pie = new BPie(0, 0, 80, -30, 30, QGraphicsItemBasic::ItemType::Pie);
     m_scene->addItem(m_pie);
     connect(m_pie, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_pie, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
@@ -210,6 +210,30 @@ void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
     case QGraphicsItemBasic::ItemType::Pie: {
         BPie* pie = dynamic_cast<BPie*>(item);
         updateConfig(pie);
+        connect(center_x, &QLineEdit::editingFinished, [=]()
+            {
+                pie->moveBy(center_x->text().toDouble() - pie->mapToScene(pie->getCenter()).x(), 0);
+                updateConfig(pie);
+            });
+        connect(center_y, &QLineEdit::editingFinished, [=]()
+            {
+                pie->moveBy(0, center_y->text().toDouble() - pie->mapToScene(pie->getCenter()).y());
+                updateConfig(pie);
+            });
+        connect(edge_x, &QLineEdit::editingFinished, [=]()
+            {
+                QPointF origin = pie->mapToScene(pie->getPointList()[0]);
+                QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
+                //pie->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                updateConfig(pie);
+            });
+        connect(edge_y, &QLineEdit::editingFinished, [=]()
+            {
+                QPointF origin = pie->mapToScene(pie->getPointList()[0]);
+                QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
+                //polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                updateConfig(pie);
+            });
     } break;
     case QGraphicsItemBasic::ItemType::Rectangle: {
         BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
@@ -317,10 +341,10 @@ void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
     case QGraphicsItemBasic::ItemType::Pie: {
         BPie* pie = dynamic_cast<BPie*>(item);
         type->setText("Ô²»¡");
-        //center_x->setText(QString::number(pie->getItemPosInScene().x()));
-        //center_y->setText(QString::number(pie->getItemPosInScene().y()));
-        //edge_x->setText(QString::number(pie->getItemedgePosInScene().x()));
-        //edge_y->setText(QString::number(pie->getItemedgePosInScene().y()));
+        center_x->setText(QString::number(pie->mapToScene(pie->getCenter()).x()));
+        center_y->setText(QString::number(pie->mapToScene(pie->getCenter()).y()));
+        edge_x->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).x()));
+        edge_y->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).y()));
     } break;
     case QGraphicsItemBasic::ItemType::Rectangle: {
         BRectangle* rectangle = dynamic_cast<BRectangle*>(item);

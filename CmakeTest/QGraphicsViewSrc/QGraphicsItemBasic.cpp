@@ -347,7 +347,7 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, Ite
     : QGraphicsItemBasic(QPointF(x, y), QPointF(x + radius * sqrt(2) / 2, y + radius * sqrt(2) / 2), QList<QPointF>{}, type), m_startAngle(startangle), m_endAngle(endangle)
 {
 
-    QPointF p = QPointF((m_center.x() + radius * cos(startangle / 180 * M_PI)), (m_center.y() + radius * sin(startangle / 180 * M_PI) * (-1)));
+    QPointF p = QPointF((m_center.x() + radius * cos(m_startAngle / 180 * M_PI)), (m_center.y() + radius * sin(m_startAngle / 180 * M_PI) * (-1)));
     BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
@@ -364,27 +364,63 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, Ite
     m_radius = radius;
 }
 
-void BPie::updateAngle()
+void BPie::updateAngle(QPointF origin, QPointF end)
 {
-    qreal dx = m_edge.x() - m_center.x();
-    qreal dy = m_edge.y() - m_center.y();
+    
+    for (auto& temp : m_pointList) {
+        if (temp->getPoint() == end) {
+            qreal dx = temp->getPoint().x() - m_center.x();
+            qreal dy = temp->getPoint().y() - m_center.y();
 
-    if (dx >= 0 && dy < 0)
-    {
-        m_endAngle = atan2((-1) * (dy), dx) * 180 / M_PI;
+            if (temp == m_pointList[0])
+            {
+                if (dx >= 0 && dy < 0)
+                {
+                    m_startAngle = atan2((-1) * (dy), dx) * 180 / M_PI - 360;
+                }
+                else if (dx < 0 && dy < 0)
+                {
+                    m_startAngle = atan2((-1) * dy, dx) * 180 / M_PI - 360;
+                }
+                else if (dx < 0 && dy >= 0)
+                {
+                    m_startAngle = atan2((-1) * dy, dx) * 180 / M_PI;
+                }
+                else if (dx >= 0 && dy >= 0)
+                {
+                    m_startAngle = - atan2(dy, dx) * 180 / M_PI;
+                }
+            }
+            else if (temp == m_pointList[1])
+            {
+                if (dx >= 0 && dy < 0)
+                {
+                    m_endAngle = atan2((-1) * (dy), dx) * 180 / M_PI;
+                }
+                else if (dx < 0 && dy < 0)
+                {
+                    m_endAngle = atan2((-1) * dy, dx) * 180 / M_PI;
+                }
+                else if (dx < 0 && dy >= 0)
+                {
+                    m_endAngle = 360 + atan2((-1) * dy, dx) * 180 / M_PI;
+                }
+                else if (dx >= 0 && dy >= 0)
+                {
+                    m_endAngle =  - atan2(dy, dx) * 180 / M_PI;
+                }
+            }
+        }
     }
-    else if (dx < 0 && dy < 0)
-    {
-        m_endAngle = atan2((-1) * dy, dx) * 180 / M_PI;
-    }
-    else if (dx < 0 && dy >= 0)
-    {
-        m_endAngle = 360 + atan2((-1) * dy, dx) * 180 / M_PI;
-    }
-    else if (dx >= 0 && dy >= 0)
-    {
-        m_endAngle = 360 - atan2(dy, dx) * 180 / M_PI;
-    }
+}
+
+void BPie::updateRadius(QPointF origin, QPointF end)
+{
+    /*for (auto& temp : m_pointList) {
+        if (temp->getPoint() == origin) {
+            m_radius = sqrt(pow(m_center.x() - m_edge.x(), 2) + pow(m_center.y() - m_edge.y(), 2));
+        }
+    }*/
 }
 
 QRectF BPie::boundingRect() const
@@ -396,7 +432,7 @@ QPainterPath BPie::shape() const
 {
     QPainterPath m_path;
     m_path.moveTo(m_center);
-    m_path.arcTo(QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2), m_startAngle, m_endAngle);
+    m_path.arcTo(QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 2, m_radius * 2), m_startAngle, m_endAngle - m_startAngle);
     m_path.lineTo(m_center);
 
     QPainterPathStroker stroker;
@@ -415,7 +451,7 @@ void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
 
     painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
     
-    painter->drawPie(ret, 16 * (m_startAngle), 16 * (m_endAngle));
+    painter->drawPie(ret, 16 * (m_startAngle), 16 * (m_endAngle - m_startAngle));
 }
 
 //------------------------------------------------------------------------------

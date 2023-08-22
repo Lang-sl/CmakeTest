@@ -83,9 +83,15 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             } break;
             case QGraphicsItemBasic::ItemType::Pie: {
                 BPie* pie = dynamic_cast<BPie*>(item);
-                //pie->setEdges(m_point);
-                //pie->updateRadius();
-                pie->updateAngle();
+
+                QLineF line(pie->getCenter(), m_point);
+                line.setLength(pie->m_radius);
+                QPointF intersectPoint = line.p2();
+
+                m_point.setX(intersectPoint.x());
+                m_point.setY(intersectPoint.y());
+                pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+                pie->updateAngle(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), m_point);
             } break;
             case QGraphicsItemBasic::ItemType::Rectangle: {
                 BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
