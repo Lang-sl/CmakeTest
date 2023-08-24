@@ -9,7 +9,7 @@ QGraphicsSceneBasic::QGraphicsSceneBasic(QObject* parent) : QGraphicsScene(paren
     //addColorItem();
     addCoordinateSystem();
     is_creating_BPolygon = false;
-    is_creating_BMixArcLine = false;
+    is_creating_BMixArcLineItems = false;
     ArcOrLine = false;
 }
 
@@ -19,9 +19,9 @@ void QGraphicsSceneBasic::startCreateBPolygon()
     m_list.clear();
 }
 
-void QGraphicsSceneBasic::startCreateBMixArcLine()
+void QGraphicsSceneBasic::startCreateBMixArcLineItems()
 {
-    is_creating_BMixArcLine = true;
+    is_creating_BMixArcLineItems = true;
     m_list.clear();
 }
 
@@ -79,7 +79,7 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
         default: break;
         }
     }
-    else if (is_creating_BMixArcLine)
+    else if (is_creating_BMixArcLineItems)
     {
         QPointF p(event->scenePos().x(), event->scenePos().y());
 
@@ -88,15 +88,15 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
         case Qt::LeftButton: {
             m_list.push_back(p);
             if (!ArcOrLine)
-                emit updatePoint(p, m_list, BMixArcLine::PointType::LineEdgeEnd);
+                emit updatePoint(p, m_list, BMixArcLineItems::PointType::LineEdgeEnd);
             else
-                emit updatePoint(p, m_list, BMixArcLine::PointType::ArcEdgeEnd);
+                emit updatePoint(p, m_list, BMixArcLineItems::PointType::ArcEdgeEnd);
         } break;
         case Qt::RightButton: {
             if (m_list.size() >= 3) {
-                emit updatePoint(p, m_list, BMixArcLine::PointType::Center);
-                emit createBMixArcLineFinished();
-                is_creating_BMixArcLine = false;
+                emit updatePoint(p, m_list, BMixArcLineItems::PointType::Center);
+                emit createBMixArcLineItemsFinished();
+                is_creating_BMixArcLineItems = false;
                 m_list.clear();
             }
         } break;
@@ -116,12 +116,12 @@ void QGraphicsSceneBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         //m_list.push_back(p);
         //emit updatePoint(p, m_list, false);
     }
-    else if (is_creating_BMixArcLine && !m_list.empty())
+    else if (is_creating_BMixArcLineItems && !m_list.empty())
     {
         if (!ArcOrLine)
-            emit movePoint(p, m_list, BMixArcLine::PointType::LineEdgeEnd);
+            emit movePoint(p, m_list, BMixArcLineItems::PointType::LineEdgeEnd);
         else
-            emit movePoint(p, m_list, BMixArcLine::PointType::ArcEdgeEnd);
+            emit movePoint(p, m_list, BMixArcLineItems::PointType::ArcEdgeEnd);
     }
     else {
         QGraphicsScene::mouseMoveEvent(event);
@@ -130,7 +130,7 @@ void QGraphicsSceneBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void QGraphicsSceneBasic::wheelEvent(QGraphicsSceneWheelEvent* event)
 {
-    if (is_creating_BMixArcLine)
+    if (is_creating_BMixArcLineItems)
     {
         ArcOrLine = !ArcOrLine;
     }

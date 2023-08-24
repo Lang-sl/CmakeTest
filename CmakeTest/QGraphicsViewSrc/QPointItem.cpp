@@ -21,6 +21,9 @@ BPointItem::BPointItem(QAbstractGraphicsShapeItem* parent, QPointF p, PointType 
     case PointType::Special:
         this->setCursor(Qt::PointingHandCursor);
         break;
+    case PointType::ArcEdge:
+        this->setCursor(Qt::PointingHandCursor);
+        break;
     default: break;
     }
 }
@@ -48,6 +51,9 @@ void BPointItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     case PointType::Special:
         painter->drawRect(QRectF(-4, -4, 8, 8));
         break;
+    case PointType::ArcEdge:
+        painter->drawRect(QRectF(-4, -4, 8, 8));
+        break;
     default: break;
     }
 }
@@ -67,7 +73,8 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             this->scene()->update();
             item->focusInEvent(nullptr);
         } break;
-        case PointType::Edge: {
+        case PointType::Edge: 
+        case PointType::ArcEdge:{
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
@@ -118,27 +125,26 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
                 BPolygon* polygon = dynamic_cast<BPolygon*>(item);
                 polygon->updatePolygon(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
             } break;
+            case QGraphicsItemBasic::ItemType::MixArcLine: {
+                BMixArcLine* mixArcLine = dynamic_cast<BMixArcLine*>(item);
+                mixArcLine->updateMixArcLine(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+            }
             default: break;
             }
         } break;
         case PointType::Special: {
+            m_point = this->mapToParent(event->pos());
+            this->setPos(m_point);
+            this->scene()->update();
+            item->focusInEvent(nullptr);
             switch (itemType) {
             case QGraphicsItemBasic::ItemType::Pie: {
-                m_point = this->mapToParent(event->pos());
-                this->setPos(m_point);
-                this->scene()->update();
-                item->focusInEvent(nullptr);
-
                 BPie* pie = dynamic_cast<BPie*>(item);
-
-                /*QLineF line(pie->getCenter(), m_point);
-                line.setLength(pie->m_radius);
-                QPointF intersectPoint = line.p2();
-
-                m_point.setX(intersectPoint.x());
-                m_point.setY(intersectPoint.y());*/
                 pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
-                //pie->updateAngle(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), m_point);
+            } break;
+            case QGraphicsItemBasic::ItemType::MixArcLine: {
+                //BPie* pie = dynamic_cast<BPie*>(item);
+                //pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
             } break;
             default: break;
             }

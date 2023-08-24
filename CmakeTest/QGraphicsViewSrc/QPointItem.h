@@ -21,7 +21,8 @@ public:
     enum class PointType {
         Center = 0, // 中心点
         Edge,       // 边缘点（可拖动改变图形的形状、大小）
-        Special
+        ArcEdge,    // 圆弧终点
+        Special     // 拖拽改变半径
     };
 
     BPointItem(QAbstractGraphicsShapeItem* parent, QPointF p, PointType type);

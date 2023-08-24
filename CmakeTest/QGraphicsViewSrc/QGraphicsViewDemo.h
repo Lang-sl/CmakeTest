@@ -38,7 +38,7 @@ private slots:
 
     void on_polygonBtn_clicked();
 
-    void on_mixArcLineBtn_clicked();
+    void on_mixArcLineItemsBtn_clicked();
 
     //void on_showColorItem_clicked();
 
@@ -67,7 +67,7 @@ private:
     QPushButton* lineBtn;
     QPushButton* pointBtn;
     QPushButton* polygonBtn;
-    QPushButton* mixArcLineBtn;
+    QPushButton* mixArcLineItemsBtn;
     QPushButton* clearBtn;
 
     bool m_showColorItem;

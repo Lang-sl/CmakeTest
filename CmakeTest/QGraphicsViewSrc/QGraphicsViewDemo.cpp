@@ -71,7 +71,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     //lineBtn = new QPushButton(tr("直线"), leftNavigationDock);
     //pointBtn = new QPushButton(tr("点"), leftNavigationDock);
     polygonBtn = new QPushButton(tr("多边形"), leftNavigationDock);
-    mixArcLineBtn = new QPushButton(tr("混合直线圆弧"), leftNavigationDock);
+    mixArcLineItemsBtn = new QPushButton(tr("混合直线圆弧"), leftNavigationDock);
     clearBtn = new QPushButton(tr("清空"), leftNavigationDock);
 
     QVBoxLayout* btnlayout = new QVBoxLayout(leftNavigationDock);
@@ -86,7 +86,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     //btnlayout->addWidget(lineBtn);
     //btnlayout->addWidget(pointBtn);
     btnlayout->addWidget(polygonBtn);
-    btnlayout->addWidget(mixArcLineBtn);
+    btnlayout->addWidget(mixArcLineItemsBtn);
     btnlayout->addWidget(clearBtn);
     btnlayout->addItem(spacer);
 
@@ -104,7 +104,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     //connect(pointBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_pointBtn_clicked);
     connect(pieBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_pieBtn_clicked);
     connect(polygonBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_polygonBtn_clicked);
-    connect(mixArcLineBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_mixArcLineBtn_clicked);
+    connect(mixArcLineItemsBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked);
 }
 
 QGraphicsViewDemo::~QGraphicsViewDemo()
@@ -190,19 +190,19 @@ void QGraphicsViewDemo::on_polygonBtn_clicked()
     connect(m_scene, &QGraphicsSceneBasic::createBPolygonFinished, [=]() { setBtnEnabled(true); });
 }
 
-void QGraphicsViewDemo::on_mixArcLineBtn_clicked()
+void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 {
-    m_scene->startCreateBMixArcLine();
+    m_scene->startCreateBMixArcLineItems();
     //setBtnEnabled(false);
-    BMixArcLine* m_mixArcLine = new BMixArcLine(QGraphicsItemBasic::ItemType::MixArcLine);
-    m_scene->addItem(m_mixArcLine);
+    BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems();
+    m_scene->addItem(m_mixArcLineItems);
 
-    connect(m_mixArcLine, &BMixArcLine::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_mixArcLine, &BMixArcLine::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
+    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
-    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLine::PointType)), m_mixArcLine, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLine::PointType)));
-    connect(m_scene, SIGNAL(movePoint(QPointF, QList<QPointF>, BMixArcLine::PointType)), m_mixArcLine, SLOT(movePoint(QPointF, QList<QPointF>, BMixArcLine::PointType)));
-    connect(m_scene, &QGraphicsSceneBasic::createBMixArcLineFinished, [=]() 
+    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
+    connect(m_scene, SIGNAL(movePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(movePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
+    connect(m_scene, &QGraphicsSceneBasic::createBMixArcLineItemsFinished, [=]() 
         { 
             //setBtnEnabled(true); 
         });

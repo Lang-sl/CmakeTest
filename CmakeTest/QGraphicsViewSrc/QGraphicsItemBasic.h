@@ -18,7 +18,7 @@
 
 #define SELECTOFFSET 5 
 #define SELECTWIDTH 10 // 选中线框的宽度
-#define MIXRADIUS 50   // 混合线框默认半径
+#define MIXRADIUS 10   // 混合线框默认半径
 
 // 自定义图元 - 基础类
 class QGraphicsItemBasic : public QObject, public QAbstractGraphicsShapeItem
@@ -195,9 +195,15 @@ class BPie : public QGraphicsItemBasic
 public:
     BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
 
+    BPie(QPointF origin, QPointF end, qreal radius, bool addToGroup = true);
+
     void updateAngle(QPointF origin, QPointF end);
 
     void updateRadius(QPointF origin, QPointF end);
+
+    QPainterPath getArc(QPointF origin, QPointF end, qreal& radius) const;
+
+    QPointF getCircleCenter(QPointF origin, QPointF end, qreal radius) const;
 
 protected:
 
@@ -210,9 +216,13 @@ protected:
         QWidget* widget) override;
 
 public:
-    qreal m_startAngle;
-    qreal m_endAngle;
-    qreal m_radius;
+    mutable qreal m_startAngle;
+    mutable qreal m_endAngle;
+    mutable qreal m_radius;
+    bool m_addToGroup;
+    QPointF m_origin;
+    QPointF m_end;
+    friend class BMixArcLineItems;
 };
 
 //------------------------------------------------------------------------------
@@ -258,6 +268,7 @@ class BLine : public QGraphicsItemBasic
 
 public:
     BLine(QPointF startPoint, QPointF endPoint, ItemType type);
+    BLine(QPointF startPoint, QPointF endPoint, bool addToGroup = true);
 
 protected:
     virtual QRectF boundingRect() const override;
@@ -267,6 +278,10 @@ protected:
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
         QWidget* widget) override;
+
+private:
+    bool m_addToGroup;
+    friend class BMixArcLineItems;
 };
 //------------------------------------------------------------------------------
 
@@ -319,7 +334,7 @@ public:
 
 //------------------------------------------------------------------------------
 
-// 多边形
+// 混合直线圆弧
 class BMixArcLine : public BPolygon
 {
     Q_OBJECT
@@ -335,12 +350,60 @@ public:
 
     void updateMixArcLine(QPointF origin, QPointF end);
 
+    QPainterPath getArc(QPointF origin, QPointF end, qreal& radius) const;
+
+    QPointF getCircleCenter(QPointF origin, QPointF end, qreal radius) const;
+
 public slots:
     void pushPoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
 
     void movePoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
 
 protected:
+    
+    virtual QRectF boundingRect() const override;
+
+    virtual QPainterPath shape() const;
+
+    virtual void paint(QPainter* painter,
+        const QStyleOptionGraphicsItem* option,
+        QWidget* widget) override;
+
+public:
+    mutable QList<qreal> m_radiuses;
+    BPointItemList m_pointArcList;
+};
+//------------------------------------------------------------------------------
+// 
+// 混合直线圆弧(重构版)
+class BMixArcLineItems : public QGraphicsItemBasic
+{
+    Q_OBJECT
+
+public:
+    BMixArcLineItems();
+
+    enum class PointType {
+        LineEdgeEnd = 0,         // 直线终点
+        ArcEdgeEnd,              // 圆弧终点
+        Center                   // 质心
+    };
+
+    void updateMixArcLine(QPointF origin, QPointF end);
+
+    QPointF getCentroid(QList<QPointF> list);
+
+    void getMaxLength();
+
+public slots:
+    void pushPoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
+
+    void movePoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
+
+protected:
+
+    /*virtual void focusInEvent(QFocusEvent* event) override;
+    virtual void focusOutEvent(QFocusEvent* event) override;*/
 
     virtual QRectF boundingRect() const override;
 
@@ -351,5 +414,7 @@ protected:
         QWidget* widget) override;
 
 public:
-    QList<qreal> m_radiuses;
+    bool is_create_finished;
+    qreal m_radius;
+    QGraphicsItemGroup* m_Items;
 };
