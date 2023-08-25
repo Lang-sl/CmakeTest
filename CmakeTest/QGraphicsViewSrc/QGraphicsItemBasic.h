@@ -31,16 +31,18 @@ public:
     enum class ItemType {
         Circle = 0,         // 圆
         Ellipse,            // 椭圆
+        CoordinateSystem,   // 坐标轴
         Pie,                // 圆弧
         Rectangle,          // 矩形
         Square,             // 正方形
         Line,               // 直线
         Point,              // 点
         Polygon,            // 多边形
-        MixArcLine          // 圆弧直线混合
+        MixArcLine,         // 圆弧直线混合
+        MixArcLineItems     // 圆弧直线混合重构版
     };
 
-    QGraphicsItemBasic() { ; }
+    QGraphicsItemBasic(ItemType type);
 
     QPointF getCenter() { return m_center; }
     void setCenter(QPointF p) { m_center = p; }
@@ -97,6 +99,7 @@ protected:
     bool m_dragOver;
 
     friend class QGraphicsViewDemo;
+    friend class BMixArcLineItems;
 };
 //------------------------------------------------------------------------------
 
@@ -105,7 +108,7 @@ protected:
 class CoordinateSystem : public QGraphicsItemBasic
 {
 public:
-    CoordinateSystem() { ; }
+    CoordinateSystem(ItemType itemType):QGraphicsItemBasic(itemType){}
 
 protected:
     QRectF boundingRect() const override
@@ -195,7 +198,7 @@ class BPie : public QGraphicsItemBasic
 public:
     BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
 
-    BPie(QPointF origin, QPointF end, qreal radius, bool addToGroup = true);
+    BPie(QPointF origin, QPointF end, qreal radius, ItemType itemType, bool addToGroup = true);
 
     void updateAngle(QPointF origin, QPointF end);
 
@@ -204,6 +207,8 @@ public:
     QPainterPath getArc(QPointF origin, QPointF end, qreal& radius) const;
 
     QPointF getCircleCenter(QPointF origin, QPointF end, qreal radius) const;
+
+    QPainterPath getArc() const;
 
 protected:
 
@@ -268,7 +273,9 @@ class BLine : public QGraphicsItemBasic
 
 public:
     BLine(QPointF startPoint, QPointF endPoint, ItemType type);
-    BLine(QPointF startPoint, QPointF endPoint, bool addToGroup = true);
+    BLine(QPointF startPoint, QPointF endPoint, ItemType itemType, bool addToGroup);
+
+    QPainterPath getLine();
 
 protected:
     virtual QRectF boundingRect() const override;
@@ -381,7 +388,7 @@ class BMixArcLineItems : public QGraphicsItemBasic
     Q_OBJECT
 
 public:
-    BMixArcLineItems();
+    BMixArcLineItems(ItemType itemType);
 
     enum class PointType {
         LineEdgeEnd = 0,         // 直线终点
@@ -402,8 +409,10 @@ public slots:
 
 protected:
 
-    /*virtual void focusInEvent(QFocusEvent* event) override;
-    virtual void focusOutEvent(QFocusEvent* event) override;*/
+    //virtual void focusInEvent(QFocusEvent* event) override;
+    //virtual void focusOutEvent(QFocusEvent* event) override;
+
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
     virtual QRectF boundingRect() const override;
 
@@ -412,6 +421,8 @@ protected:
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
         QWidget* widget) override;
+
+    void paintItemRecursive(QGraphicsItemBasic* item, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 public:
     bool is_create_finished;

@@ -194,7 +194,7 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 {
     m_scene->startCreateBMixArcLineItems();
     //setBtnEnabled(false);
-    BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems();
+    BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems(QGraphicsItemBasic::ItemType::MixArcLineItems);
     m_scene->addItem(m_mixArcLineItems);
 
     connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);

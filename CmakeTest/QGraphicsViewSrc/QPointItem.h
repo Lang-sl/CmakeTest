@@ -47,6 +47,7 @@ public:
     PointType m_type;
 
     //friend class QGraphicsItemBasic;
+    friend class BMixArcLineItems;
 };
 
 //------------------------------------------------------------------------------

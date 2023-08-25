@@ -38,7 +38,7 @@ void QGraphicsSceneBasic::addColorItem()
 
 void QGraphicsSceneBasic::addCoordinateSystem()
 {
-    this->addItem(new CoordinateSystem);
+    this->addItem(new CoordinateSystem(QGraphicsItemBasic::ItemType::CoordinateSystem));
 }
 
 void QGraphicsSceneBasic::isShowColorItem(bool b)
@@ -104,6 +104,7 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
         }
     }
     else {
+        update();
         QGraphicsScene::mousePressEvent(event);
     }
 }
