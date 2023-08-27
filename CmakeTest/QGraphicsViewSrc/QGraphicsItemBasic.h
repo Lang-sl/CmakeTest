@@ -402,10 +402,11 @@ public:
 
     void getMaxLength();
 
+Q_SIGNALS:
+
+
 public slots:
     void pushPoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
-
-    void movePoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
 
 protected:
 
@@ -428,4 +429,6 @@ public:
     bool is_create_finished;
     qreal m_radius;
     QGraphicsItemGroup* m_Items;
+    QGraphicsItemGroup* m_mirrorItems;
+    BPointItemList m_mirrorPointList;
 };

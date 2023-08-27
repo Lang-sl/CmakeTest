@@ -201,7 +201,6 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
     connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
     connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
-    connect(m_scene, SIGNAL(movePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(movePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
     connect(m_scene, &QGraphicsSceneBasic::createBMixArcLineItemsFinished, [=]() 
         { 
             //setBtnEnabled(true); 

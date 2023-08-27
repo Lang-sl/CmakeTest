@@ -86,6 +86,11 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
         switch (event->buttons())
         {
         case Qt::LeftButton: {
+            if (p.x() < 0)
+            {
+                emit pointIllegal();
+                return;
+            }
             m_list.push_back(p);
             if (!ArcOrLine)
                 emit updatePoint(p, m_list, BMixArcLineItems::PointType::LineEdgeEnd);
@@ -106,26 +111,6 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
     else {
         update();
         QGraphicsScene::mousePressEvent(event);
-    }
-}
-
-void QGraphicsSceneBasic::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
-{
-    QPointF p(event->scenePos().x(), event->scenePos().y());
-    if (is_creating_BPolygon) {
-
-        //m_list.push_back(p);
-        //emit updatePoint(p, m_list, false);
-    }
-    else if (is_creating_BMixArcLineItems && !m_list.empty())
-    {
-        if (!ArcOrLine)
-            emit movePoint(p, m_list, BMixArcLineItems::PointType::LineEdgeEnd);
-        else
-            emit movePoint(p, m_list, BMixArcLineItems::PointType::ArcEdgeEnd);
-    }
-    else {
-        QGraphicsScene::mouseMoveEvent(event);
     }
 }
 
