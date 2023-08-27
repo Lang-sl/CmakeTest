@@ -38,6 +38,8 @@ private slots:
 
     void on_polygonBtn_clicked();
 
+    void on_mixArcLineItemsBtn_clicked();
+
     //void on_showColorItem_clicked();
 
     void on_itemFocusIn(QGraphicsItemBasic* i);
@@ -47,6 +49,8 @@ private slots:
     void setBtnEnabled(bool enable);
 
 private:
+    void updateConfig(QGraphicsItemBasic* i);
+    
     Ui::QGraphicsViewDemo ui;
 
     QGraphicsSceneBasic* m_scene;
@@ -63,6 +67,7 @@ private:
     QPushButton* lineBtn;
     QPushButton* pointBtn;
     QPushButton* polygonBtn;
+    QPushButton* mixArcLineItemsBtn;
     QPushButton* clearBtn;
 
     bool m_showColorItem;

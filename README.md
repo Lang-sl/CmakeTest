@@ -6,7 +6,7 @@
 
 使用vs使用Cmake构建Qt项目测试
 
-主要包括`src`文件夹中的`CADDemo`以及`QGraphicsViewScr`文件夹中的`GraphicsViewDemo`
+主要包括`src`文件夹中的`CADDemo`以及`QGraphicsViewSrc`文件夹中的`GraphicsViewDemo`
 
 ### 构建流程
 
