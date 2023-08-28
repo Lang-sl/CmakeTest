@@ -19,6 +19,7 @@ QGraphicsItemBasic::QGraphicsItemBasic(ItemType type)
     m_innercolor_copy = m_innercolor;*/
 
     this->setPen(m_pen_noSelected);
+    this->setFlags(QGraphicsItem::ItemIsSelectable);
 }
 
 QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPointF> edges, ItemType type)
@@ -73,6 +74,20 @@ void QGraphicsItemBasic::focusInEvent(QFocusEvent* event)
     Q_UNUSED(event);
     this->setPen(m_pen_isSelected);
     //m_innercolor = m_innercolor.lighter(130);
+    switch (getType())
+    {
+    case(ItemType::MixArcLineItems):{
+        qDebug() << "MixArcLineItems";
+    }break;
+    case(ItemType::Line): {
+        qDebug() << "Line";
+    }break;
+    case(ItemType::Arc): {
+        qDebug() << "Arc";
+    }break;
+    default:
+        break;
+    }
     emit isFocusIn(this);
 }
 
@@ -359,7 +374,7 @@ void BCircle::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 //------------------------------------------------------------------------------
 
-BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type)
+BArc::BArc(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type)
     : QGraphicsItemBasic(QPointF(x, y), QPointF(x + radius * sqrt(2) / 2, y + radius * sqrt(2) / 2), QList<QPointF>{}, type), m_startAngle(startangle), m_endAngle(endangle)
 {
 
@@ -367,13 +382,11 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, Ite
     BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
-    //m_itemedgePosInScene.append(point->pos());
 
     p = QPointF((m_center.x() + radius * cos(m_endAngle / 180 * M_PI)), (m_center.y() + radius * sin(m_endAngle / 180 * M_PI) * (-1)));
     point = new BPointItem(this, p, BPointItem::PointType::Edge);
     point->setParentItem(this);
     m_pointList.append(point);
-    //m_itemedgePosInScene.append(point->pos()); 
 
     p = QPointF((m_center.x() + radius * cos((m_startAngle + m_endAngle) / 360 * M_PI)), (m_center.y() + radius * sin((m_startAngle + m_endAngle) / 360 * M_PI) * (-1)));
     point = new BPointItem(this, p, BPointItem::PointType::Special);
@@ -386,7 +399,7 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, Ite
     m_addToGroup = false;
 }
 
-BPie::BPie(QPointF origin, QPointF end, ItemType itemType, bool addToGroup)
+BArc::BArc(QPointF origin, QPointF end, ItemType itemType, bool addToGroup)
     :QGraphicsItemBasic(itemType)
 {
     m_addToGroup = true;
@@ -399,18 +412,13 @@ BPie::BPie(QPointF origin, QPointF end, ItemType itemType, bool addToGroup)
     m_end = end;
     getArc(origin, end, m_radius);
     m_center = getCircleCenter(origin, end, m_radius);
-    m_type = QGraphicsItemBasic::ItemType::Pie;
+    m_type = QGraphicsItemBasic::ItemType::Arc;
     m_isConvex = true;
-    /*QPointF p = QPointF((m_center.x() + m_radius * cos((m_startAngle + m_endAngle) / 360 * M_PI)), (m_center.y() + m_radius * sin((m_startAngle + m_endAngle) / 360 * M_PI) * (-1)));
-    BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Special);
-    point->setParentItem(this);
-    m_pointList.append(point);
 
-    m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
-    m_pointList.setRandColor();*/
+    this->setFlags(QGraphicsItem::ItemIsFocusable);
 }
 
-void BPie::updateAngle(QPointF origin, QPointF end)
+void BArc::updateAngle(QPointF origin, QPointF end)
 {
     
     for (auto& temp : m_pointList) {
@@ -460,7 +468,7 @@ void BPie::updateAngle(QPointF origin, QPointF end)
     }
 }
 
-void BPie::updateRadius(QPointF origin, QPointF end)
+void BArc::updateRadius(QPointF origin, QPointF end)
 {
     qreal dx = this->mapFromScene(end).x() - m_center.x();
     qreal dy = this->mapFromScene(end).y() - m_center.y();
@@ -474,7 +482,7 @@ void BPie::updateRadius(QPointF origin, QPointF end)
     m_pointList[1]->setPoint(QPointF(m_center.x() + m_radius * cos(endAngleRad), m_center.y() - m_radius * sin(endAngleRad)));
 }
 
-QPainterPath BPie::getArc(QPointF origin, QPointF end, qreal& radius) const
+QPainterPath BArc::getArc(QPointF origin, QPointF end, qreal& radius) const
 {
     QPainterPath path;
 
@@ -520,7 +528,7 @@ QPainterPath BPie::getArc(QPointF origin, QPointF end, qreal& radius) const
     return path;
 }
 
-QPointF BPie::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
+QPointF BArc::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
 {
     // 计算圆心坐标
     QPointF center;
@@ -557,19 +565,18 @@ QPointF BPie::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
     return center;
 }
 
-QPainterPath BPie::getArc() const
+QPainterPath BArc::getArc() const
 {
     return getArc(m_origin, m_end, m_radius);
 }
 
 
-
-QRectF BPie::boundingRect() const
+QRectF BArc::boundingRect() const
 {
     return QRectF(m_center.x() - m_radius - SELECTOFFSET, m_center.y() - m_radius - SELECTOFFSET, (m_radius + SELECTOFFSET) * 2, (m_radius + SELECTOFFSET) * 2);
 }
 
-QPainterPath BPie::shape() const
+QPainterPath BArc::shape() const
 {
     QPainterPath m_path;
 
@@ -589,7 +596,7 @@ QPainterPath BPie::shape() const
     return stroker.createStroke(m_path);
 }
 
-void BPie::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void BArc::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -802,6 +809,7 @@ BLine::BLine(QPointF startPoint, QPointF endPoint, ItemType itemType, bool addTo
     m_center = startPoint;
     m_edge = endPoint;
     m_type = QGraphicsItemBasic::ItemType::Line;
+    this->setFlags(QGraphicsItem::ItemIsFocusable);
 }
 
 QPainterPath BLine::getLine()
@@ -1337,7 +1345,6 @@ BMixArcLineItems::BMixArcLineItems(ItemType itemType)
     is_create_finished = false;
     m_Items = new QGraphicsItemGroup();
     m_mirrorItems = new QGraphicsItemGroup();
-    this->setFlags(QGraphicsItem::ItemIsSelectable);
 }
 
 QPointF BMixArcLineItems::getCentroid(QList<QPointF> list)
@@ -1373,6 +1380,25 @@ void BMixArcLineItems::getMaxLength()
         }
     }
     m_radius = ret * 2;
+}
+
+void BMixArcLineItems::convertLineToArc(BLine* line)
+{
+
+}
+
+void BMixArcLineItems::convertLineToArc(BLine* line, int i)
+{
+}
+
+void BMixArcLineItems::convertArcToLine(BArc* arc)
+{
+    QList<QGraphicsItem*> items = m_Items->childItems();
+
+}
+
+void BMixArcLineItems::convertArcToLine(BArc* arc, int i)
+{
 }
 
 void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType pointType)
@@ -1414,8 +1440,8 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
 
             if (m_pointList.size() > 1)
             {
-                m_Items->addToGroup(new BPie(m_pointList[m_pointList.size() - 2]->getPoint(), m_pointList[m_pointList.size() - 1]->getPoint(), ItemType::Pie, true));
-                m_mirrorItems->addToGroup(new BPie(m_mirrorPointList[m_mirrorPointList.size() - 2]->getPoint(), m_mirrorPointList[m_mirrorPointList.size() - 1]->getPoint(), ItemType::Pie, true));
+                m_Items->addToGroup(new BArc(m_pointList[m_pointList.size() - 2]->getPoint(), m_pointList[m_pointList.size() - 1]->getPoint(), ItemType::Arc, true));
+                m_mirrorItems->addToGroup(new BArc(m_mirrorPointList[m_mirrorPointList.size() - 2]->getPoint(), m_mirrorPointList[m_mirrorPointList.size() - 1]->getPoint(), ItemType::Arc, true));
             }
                 
         }
@@ -1467,28 +1493,59 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
 
 
 
-void BMixArcLineItems::updateMixArcLine(QPointF origin, QPointF end)
+void BMixArcLineItems::updateMixArcLineItems(QPointF origin, QPointF end, BPointItem* point)
 {
-    QList<QPointF> list;
+    
+    int index = getEdgeIndex(point);
+    if (index != -1) {
+        QList<QGraphicsItem*> items = m_Items->childItems();
 
-    for (auto& temp : m_pointList) {
-        if (temp->getPoint() == origin) {
-            temp->setPoint(end);
+        for (int i = index; i > index - 2 && i > -1; i--)
+        {
+            QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(items[i]);
+            QGraphicsItemBasic::ItemType itemType = customItem->getType();
+            switch (itemType)
+            {
+            case QGraphicsItemBasic::ItemType::Arc: {
+                BArc* pie = dynamic_cast<BArc*>(customItem);
+                if (i == index)
+                {
+                    convertArcToLine(pie, i);
+                }
 
+            }break;
+            case QGraphicsItemBasic::ItemType::Line: {
+                BLine* line = dynamic_cast<BLine*>(customItem);
+                //items[i]
+
+            }break;
+            default:
+                break;
+            }
         }
-        list.append(temp->getPoint());
+
     }
+    
+    //QList<QPointF> list;
 
-    m_center = getCentroid(list);
+    //for (auto& temp : m_pointList) {
+    //    if (temp->getPoint() == origin) {
+    //        temp->setPoint(end);
 
-    //setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
+    //    }
+    //    list.append(temp->getPoint());
+    //}
+
+    //m_center = getCentroid(list);
+
+    ////setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
 
 
-    m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
+    //m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
 
-    getMaxLength();
+    //getMaxLength();
 
-    update();
+    //update();
 }
 
 void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
@@ -1501,17 +1558,17 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
             QGraphicsItemBasic::ItemType itemType = customItem->getType();
             switch (itemType)
             {
-            case QGraphicsItemBasic::ItemType::Pie: {
-                BPie* pie = dynamic_cast<BPie*>(customItem);
+            case QGraphicsItemBasic::ItemType::Arc: {
+                BArc* pie = dynamic_cast<BArc*>(customItem);
                 if (pie->shape().contains(pos)) {
-                    //pie->setSelected(true);
                     pie->setSelected(true);
                     pie->focusInEvent(nullptr);
-                    //pie->mousePressEvent(event);
+                    //pie->setFocus(Qt::MouseFocusReason);
                 }
                 else {
                     pie->setSelected(false);
                     pie->focusOutEvent(nullptr);
+                    //pie->clearFocus();
                 }
             }break;
             case QGraphicsItemBasic::ItemType::Line: {
@@ -1519,12 +1576,12 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
                 if (line->shape().contains(pos)) {
                     line->setSelected(true);
                     line->focusInEvent(nullptr);
-                    //line->mousePressEvent(event);
+                    //line->setFocus(Qt::MouseFocusReason);
                 }
                 else {
                     line->setSelected(false);
                     line->focusOutEvent(nullptr);
-                    //line->focusOutEvent(nullptr);
+                    //line->clearFocus();
                 }
             }break;
             default:
@@ -1532,7 +1589,7 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
             }
         }
     }
-    //QGraphicsItemBasic::mousePressEvent(event);
+    QGraphicsItemBasic::mousePressEvent(event);
 }
 
 QRectF BMixArcLineItems::boundingRect() const
@@ -1551,8 +1608,8 @@ QPainterPath BMixArcLineItems::shape() const
         QGraphicsItemBasic::ItemType itemType = customItem->getType();
         switch (itemType)
         {
-        case QGraphicsItemBasic::ItemType::Pie: {
-            BPie* pie = dynamic_cast<BPie*>(customItem);
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(customItem);
             m_path.addPath(pie->shape());
         }break;
         case QGraphicsItemBasic::ItemType::Line: {
@@ -1589,17 +1646,15 @@ void BMixArcLineItems::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
         QGraphicsItemBasic::ItemType itemType = customItem->getType();
         switch (itemType)
         {
-        case QGraphicsItemBasic::ItemType::Pie: {
-            BPie* pie = dynamic_cast<BPie*>(customItem);
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(customItem);
             //painter->drawPath(pie->getArc());
             pie->paint(painter, option, widget);
-            paintItemRecursive(pie, painter, option, widget);
         }break;
         case QGraphicsItemBasic::ItemType::Line: {
             BLine* line = dynamic_cast<BLine*>(customItem);
             //painter->drawPath(line->getLine());
             line->paint(painter, option, widget);
-            paintItemRecursive(line, painter, option, widget);
         }break;
         default:
             break;
@@ -1613,17 +1668,15 @@ void BMixArcLineItems::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
         QGraphicsItemBasic::ItemType itemType = customItem->getType();
         switch (itemType)
         {
-        case QGraphicsItemBasic::ItemType::Pie: {
-            BPie* pie = dynamic_cast<BPie*>(customItem);
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(customItem);
             //painter->drawPath(pie->getArc());
             pie->paint(painter, option, widget);
-            paintItemRecursive(pie, painter, option, widget);
         }break;
         case QGraphicsItemBasic::ItemType::Line: {
             BLine* line = dynamic_cast<BLine*>(customItem);
             //painter->drawPath(line->getLine());
             line->paint(painter, option, widget);
-            paintItemRecursive(line, painter, option, widget);
         }break;
         default:
             break;
@@ -1631,11 +1684,3 @@ void BMixArcLineItems::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     }
 }
 
-void BMixArcLineItems::paintItemRecursive(QGraphicsItemBasic* item, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    //// 递归绘制子项
-    //foreach(BPointItem * child, item->m_pointList)
-    //{
-    //    child->paint(painter, option, widget);
-    //}
-}

@@ -32,7 +32,7 @@ public:
         Circle = 0,         // 圆
         Ellipse,            // 椭圆
         CoordinateSystem,   // 坐标轴
-        Pie,                // 圆弧
+        Arc,                // 圆弧
         Rectangle,          // 矩形
         Square,             // 正方形
         Line,               // 直线
@@ -192,13 +192,15 @@ public:
 
 //------------------------------------------------------------------------------
 
-// 饼
-class BPie : public QGraphicsItemBasic
+class BLine;
+
+// 圆弧
+class BArc : public QGraphicsItemBasic
 {
 public:
-    BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
+    BArc(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
 
-    BPie(QPointF origin, QPointF end, ItemType itemType, bool addToGroup = true);
+    BArc(QPointF origin, QPointF end, ItemType itemType, bool addToGroup = true);
 
     void updateAngle(QPointF origin, QPointF end);
 
@@ -277,6 +279,7 @@ public:
     BLine(QPointF startPoint, QPointF endPoint, ItemType itemType, bool addToGroup);
 
     QPainterPath getLine();
+
 
 protected:
     virtual QRectF boundingRect() const override;
@@ -397,12 +400,19 @@ public:
         Center                   // 质心
     };
 
-    void updateMixArcLine(QPointF origin, QPointF end);
+    void updateMixArcLineItems(QPointF origin, QPointF end, BPointItem* point);
 
     QPointF getCentroid(QList<QPointF> list);
 
     void getMaxLength();
 
+    void convertLineToArc(BLine* line);
+
+    void convertLineToArc(BLine* line, int i);
+
+    void convertArcToLine(BArc* arc);
+
+    void convertArcToLine(BArc* arc, int i);
 Q_SIGNALS:
 
 
@@ -424,12 +434,12 @@ protected:
         const QStyleOptionGraphicsItem* option,
         QWidget* widget) override;
 
-    void paintItemRecursive(QGraphicsItemBasic* item, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-
 private:
     bool is_create_finished;
     qreal m_radius;
     QGraphicsItemGroup* m_Items;
     QGraphicsItemGroup* m_mirrorItems;
     BPointItemList m_mirrorPointList;
+
+    friend class BPointItem;
 };

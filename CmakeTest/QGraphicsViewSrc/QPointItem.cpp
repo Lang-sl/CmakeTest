@@ -68,17 +68,12 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         QGraphicsItemBasic::ItemType itemType = item->getType();
 
         switch (m_type) {
-        case PointType::Center: {
-            item->moveBy(dx, dy);
-            this->scene()->update();
-            item->focusInEvent(nullptr);
-        } break;
         case PointType::Edge: 
         case PointType::ArcEdge:{
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
-            item->focusInEvent(nullptr);
+            //item->focusInEvent(nullptr);
             switch (itemType) {
             case QGraphicsItemBasic::ItemType::Ellipse: {
                 BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
@@ -94,8 +89,8 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
                 //circle->setEdges(m_point);
                 circle->updateRadius();
             } break;
-            case QGraphicsItemBasic::ItemType::Pie: {
-                BPie* pie = dynamic_cast<BPie*>(item);
+            case QGraphicsItemBasic::ItemType::Arc: {
+                BArc* pie = dynamic_cast<BArc*>(item);
             } break;
             case QGraphicsItemBasic::ItemType::Rectangle: {
                 BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
@@ -120,6 +115,10 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
                 BMixArcLine* mixArcLine = dynamic_cast<BMixArcLine*>(item);
                 mixArcLine->updateMixArcLine(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
             }
+            case QGraphicsItemBasic::ItemType::MixArcLineItems: {
+                BMixArcLineItems* mixArcLineItems = dynamic_cast<BMixArcLineItems*>(item);
+                mixArcLineItems->updateMixArcLineItems(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()), this);
+            }
             default: break;
             }
         } break;
@@ -129,12 +128,12 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             this->scene()->update();
             item->focusInEvent(nullptr);
             switch (itemType) {
-            case QGraphicsItemBasic::ItemType::Pie: {
-                BPie* pie = dynamic_cast<BPie*>(item);
+            case QGraphicsItemBasic::ItemType::Arc: {
+                BArc* pie = dynamic_cast<BArc*>(item);
                 pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
             } break;
             case QGraphicsItemBasic::ItemType::MixArcLine: {
-                //BPie* pie = dynamic_cast<BPie*>(item);
+                //BArc* pie = dynamic_cast<BArc*>(item);
                 //pie->updateRadius(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
             } break;
             default: break;

@@ -130,10 +130,10 @@ void QGraphicsViewDemo::on_ellipseBtn_clicked()
 
 void QGraphicsViewDemo::on_pieBtn_clicked()
 {
-    BPie* m_pie = new BPie(0, 0, 80, -30, 30, QGraphicsItemBasic::ItemType::Pie);
+    BArc* m_pie = new BArc(0, 0, 80, -30, 30, QGraphicsItemBasic::ItemType::Arc);
     m_scene->addItem(m_pie);
-    connect(m_pie, &BPie::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_pie, &BPie::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
+    connect(m_pie, &BArc::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_pie, &BArc::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_squareBtn_clicked()
@@ -197,8 +197,8 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
     BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems(QGraphicsItemBasic::ItemType::MixArcLineItems);
     m_scene->addItem(m_mixArcLineItems);
 
-    /*connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);*/
+    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
     connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
     connect(m_scene, &QGraphicsSceneBasic::createBMixArcLineItemsFinished, [=]() 
@@ -231,8 +231,8 @@ void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
         BCircle* circle = dynamic_cast<BCircle*>(item);
         updateConfig(circle);
     } break;
-    case QGraphicsItemBasic::ItemType::Pie: {
-        BPie* pie = dynamic_cast<BPie*>(item);
+    case QGraphicsItemBasic::ItemType::Arc: {
+        BArc* pie = dynamic_cast<BArc*>(item);
         updateConfig(pie);
         connect(center_x, &QLineEdit::editingFinished, [=]()
             {
@@ -362,8 +362,8 @@ void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
         //edge_x->setText(QString::number(circle->getItemedgePosInScene().x()));
         //edge_y->setText(QString::number(circle->getItemedgePosInScene().y()));
     } break;
-    case QGraphicsItemBasic::ItemType::Pie: {
-        BPie* pie = dynamic_cast<BPie*>(item);
+    case QGraphicsItemBasic::ItemType::Arc: {
+        BArc* pie = dynamic_cast<BArc*>(item);
         type->setText("Ô²»¡");
         center_x->setText(QString::number(pie->mapToScene(pie->getCenter()).x()));
         center_y->setText(QString::number(pie->mapToScene(pie->getCenter()).y()));
