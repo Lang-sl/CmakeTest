@@ -198,7 +198,7 @@ class BPie : public QGraphicsItemBasic
 public:
     BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, ItemType type);
 
-    BPie(QPointF origin, QPointF end, qreal radius, ItemType itemType, bool addToGroup = true);
+    BPie(QPointF origin, QPointF end, ItemType itemType, bool addToGroup = true);
 
     void updateAngle(QPointF origin, QPointF end);
 
@@ -220,11 +220,12 @@ protected:
         const QStyleOptionGraphicsItem* option,
         QWidget* widget) override;
 
-public:
+private:
     mutable qreal m_startAngle;
     mutable qreal m_endAngle;
     mutable qreal m_radius;
     bool m_addToGroup;
+    bool m_isConvex;
     QPointF m_origin;
     QPointF m_end;
     friend class BMixArcLineItems;
@@ -425,7 +426,7 @@ protected:
 
     void paintItemRecursive(QGraphicsItemBasic* item, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
-public:
+private:
     bool is_create_finished;
     qreal m_radius;
     QGraphicsItemGroup* m_Items;

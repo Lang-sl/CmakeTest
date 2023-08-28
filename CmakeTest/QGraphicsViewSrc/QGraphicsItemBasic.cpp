@@ -386,23 +386,28 @@ BPie::BPie(qreal x, qreal y, qreal radius, qreal startangle, qreal endangle, Ite
     m_addToGroup = false;
 }
 
-BPie::BPie(QPointF origin, QPointF end, qreal radius, ItemType itemType, bool addToGroup)
+BPie::BPie(QPointF origin, QPointF end, ItemType itemType, bool addToGroup)
     :QGraphicsItemBasic(itemType)
 {
     m_addToGroup = true;
-    m_radius = radius;
+    qreal distance = sqrt(pow(end.x() - origin.x(), 2) + pow(end.y() - origin.y(), 2));
+    m_radius = distance / 2;
+
+    m_radius += 50;
+
     m_origin = origin;
     m_end = end;
     getArc(origin, end, m_radius);
     m_center = getCircleCenter(origin, end, m_radius);
     m_type = QGraphicsItemBasic::ItemType::Pie;
-    QPointF p = QPointF((m_center.x() + m_radius * cos((m_startAngle + m_endAngle) / 360 * M_PI)), (m_center.y() + m_radius * sin((m_startAngle + m_endAngle) / 360 * M_PI) * (-1)));
+    m_isConvex = true;
+    /*QPointF p = QPointF((m_center.x() + m_radius * cos((m_startAngle + m_endAngle) / 360 * M_PI)), (m_center.y() + m_radius * sin((m_startAngle + m_endAngle) / 360 * M_PI) * (-1)));
     BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Special);
     point->setParentItem(this);
     m_pointList.append(point);
 
     m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
-    m_pointList.setRandColor();
+    m_pointList.setRandColor();*/
 }
 
 void BPie::updateAngle(QPointF origin, QPointF end)
@@ -481,11 +486,6 @@ QPainterPath BPie::getArc(QPointF origin, QPointF end, qreal& radius) const
     // 计算两点之间的距离
     qreal distance = sqrt(pow(end.x() - origin.x(), 2) + pow(end.y() - origin.y(), 2));
 
-    // 如果给定的半径小于两点之间距离的一半，那么不能画出一个经过这两个点的圆弧
-    while (radius < distance / 2) {
-        radius++;
-    }
-
     //如果给定的半径大于两点之间距离的一半，那么锁定半径对圆心位置进行更改
     if (radius > distance / 2)
     {
@@ -496,16 +496,23 @@ QPainterPath BPie::getArc(QPointF origin, QPointF end, qreal& radius) const
     QRectF rect(midpoint.x() - radius, midpoint.y() - radius, 2 * radius, 2 * radius);
 
     // 计算起始角度和跨越角度
-    qreal startAngle = -atan2(end.y() - midpoint.y(), end.x() - midpoint.x()) * 180 / M_PI;
+    qreal startAngle = - atan2(end.y() - midpoint.y(), end.x() - midpoint.x()) * 180 / M_PI;
     m_startAngle = startAngle;
-    qreal endAngle = -atan2(origin.y() - midpoint.y(), origin.x() - midpoint.x()) * 180 / M_PI;
-    m_endAngle = endAngle;
-    qreal spanAngle = endAngle - startAngle;
+    qreal endAngle = - atan2(origin.y() - midpoint.y(), origin.x() - midpoint.x()) * 180 / M_PI;
 
-    //// 调整角度到[0, 360]的范围
-    //if (startAngle < 0) startAngle += 360;
-    //if (endAngle < 0) endAngle += 360;
-    //if (spanAngle < 0) spanAngle += 360;
+    qreal spanAngle = endAngle - startAngle;
+    if (spanAngle > 180)
+    {
+        spanAngle -= 360;
+        endAngle -= 360;
+    }
+    else if (spanAngle < -180)
+    {
+        spanAngle += 360;
+        endAngle += 360;
+    }
+
+    m_endAngle = endAngle;
 
     // 添加圆弧到路径
     path.arcTo(rect, startAngle, spanAngle);
@@ -524,9 +531,24 @@ QPointF BPie::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
     // 计算中点
     QPointF midPoint = (origin + end) / 2;
 
-    // 计算垂直向量
-    qreal vx = -(end.y() - origin.y());
+    qreal vx = end.y() - origin.y();
     qreal vy = end.x() - origin.x();
+
+    if (m_isConvex)
+    {
+        // 计算垂直向量
+        if ( vy > 0 )
+            vy = -vy;
+        else
+            vx = -vx;
+    }
+    else
+    {
+        if (vy > 0)
+            vx = -vx;
+        else
+            vy = -vy;
+    }
 
     // 计算圆心
     center.setX(midPoint.x() + h * vx / d);
@@ -1315,8 +1337,7 @@ BMixArcLineItems::BMixArcLineItems(ItemType itemType)
     is_create_finished = false;
     m_Items = new QGraphicsItemGroup();
     m_mirrorItems = new QGraphicsItemGroup();
-    this->setFlags(QGraphicsItem::ItemIsSelectable |
-        QGraphicsItem::ItemIsMovable);
+    this->setFlags(QGraphicsItem::ItemIsSelectable);
 }
 
 QPointF BMixArcLineItems::getCentroid(QList<QPointF> list)
@@ -1393,8 +1414,8 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
 
             if (m_pointList.size() > 1)
             {
-                m_Items->addToGroup(new BPie(m_pointList[m_pointList.size() - 2]->getPoint(), m_pointList[m_pointList.size() - 1]->getPoint(), MIXRADIUS, ItemType::Pie, true));
-                m_mirrorItems->addToGroup(new BPie(m_mirrorPointList[m_mirrorPointList.size() - 2]->getPoint(), m_mirrorPointList[m_mirrorPointList.size() - 1]->getPoint(), MIXRADIUS, ItemType::Pie, true));
+                m_Items->addToGroup(new BPie(m_pointList[m_pointList.size() - 2]->getPoint(), m_pointList[m_pointList.size() - 1]->getPoint(), ItemType::Pie, true));
+                m_mirrorItems->addToGroup(new BPie(m_mirrorPointList[m_mirrorPointList.size() - 2]->getPoint(), m_mirrorPointList[m_mirrorPointList.size() - 1]->getPoint(), ItemType::Pie, true));
             }
                 
         }
