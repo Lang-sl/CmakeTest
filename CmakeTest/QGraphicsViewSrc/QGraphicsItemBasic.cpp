@@ -1353,6 +1353,8 @@ BMixArcLineItems::BMixArcLineItems(ItemType itemType)
 {
     is_create_finished = false;
     m_Items = new QGraphicsItemGroup();
+    m_startLine = new BLine(QPointF(0, 0), QPointF(0, 0), ItemType::Line, true);
+    m_endLine = new BLine(QPointF(0, 0), QPointF(0, 0), ItemType::Line, true);
 }
 
 QPointF BMixArcLineItems::getCentroid(QList<QPointF> list)
@@ -1480,6 +1482,33 @@ void BMixArcLineItems::convertArcToLine(BArc* arc, int i)
     }
 }
 
+void BMixArcLineItems::checkPointList()
+{
+    if (m_pointList.at(0)->getPoint().x() != 0)
+    {
+        m_startLine->show();
+        m_startLine->setCenter(QPointF(0, m_pointList.at(0)->getPoint().y()));
+        m_startLine->setEdge(m_pointList.at(0)->getPoint());
+        m_startLine->setPen(QColor(138, 43, 226));
+    }
+    else
+    {
+        m_startLine->hide();
+    }
+
+    if (m_pointList.at(m_pointList.size() - 1)->getPoint().x() != 0)
+    {
+        m_endLine->show();
+        m_endLine->setCenter(QPointF(0, m_pointList.at(m_pointList.size() - 1)->getPoint().y()));
+        m_endLine->setEdge(m_pointList.at(m_pointList.size() - 1)->getPoint());
+        m_endLine->setPen(QColor(138, 43, 226));
+    }
+    else
+    {
+        m_endLine->hide();
+    }
+}
+
 void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType pointType)
 {
     if (!is_create_finished) {
@@ -1490,7 +1519,7 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
         if (pointType == PointType::Center) {
             /*m_pointList[m_pointList.size() - 1]->setPoint(m_center);
             m_pointList[m_pointList.size() - 1]->m_type = BPointItem::PointType::Center;*/
-            m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+            //m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
             
             m_pointList.setColor(QColor(220, 220, 220));
             is_create_finished = true;
@@ -1517,6 +1546,7 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
                                              m_pointList[m_pointList.size() - 1]->getPoint(), 
                                              ItemType::Arc, true));
             }
+            checkPointList();
                 
         }
         else
@@ -1539,6 +1569,7 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
                                               m_pointList[m_pointList.size() - 1]->getPoint(), 
                                               ItemType::Line, true));
             }
+            checkPointList();
         }
 
         this->update();
@@ -1596,6 +1627,7 @@ void BMixArcLineItems::updateMixArcLineItems(QPointF origin, QPointF end, BPoint
                 break;
             }
         }
+        checkPointList();
 
     }
     

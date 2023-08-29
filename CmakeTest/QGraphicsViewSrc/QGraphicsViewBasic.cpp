@@ -30,6 +30,7 @@ void QGraphicsViewBasic::addItem(QGraphicsItemBasic::ItemType itemType)
         BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems(QGraphicsItemBasic::ItemType::MixArcLineItems);
         m_scene->startCreateBMixArcLineItems();
         m_scene->addItem(m_mixArcLineItems->getItemsGroup());
+        m_scene->addItem(m_mixArcLineItems->getStartEndGroup());
         m_scene->addItem(m_mixArcLineItems);
         connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
     }

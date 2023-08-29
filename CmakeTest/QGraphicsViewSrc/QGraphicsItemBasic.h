@@ -421,7 +421,19 @@ public:
 
     void convertArcToLine(BArc* arc, int i);
 
+    void checkPointList();
+
     QGraphicsItemGroup* getItemsGroup() { return m_Items; }
+
+    QGraphicsItemGroup* getStartEndGroup()
+    {
+        QGraphicsItemGroup* Items = new QGraphicsItemGroup();
+        //if (m_startLine)
+        Items->addToGroup(m_startLine);
+        //if (m_endLine)
+        Items->addToGroup(m_endLine);
+        return Items;
+    }
 
 Q_SIGNALS:
 
@@ -452,6 +464,8 @@ private:
     bool is_create_finished;
     qreal m_radius;
     QGraphicsItemGroup* m_Items;
+    BLine* m_startLine;
+    BLine* m_endLine;
 
     friend class BPointItem;
 };

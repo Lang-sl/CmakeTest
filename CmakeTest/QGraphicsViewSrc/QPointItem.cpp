@@ -77,6 +77,11 @@ void BPointItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
     if (event->buttons() == Qt::LeftButton) {
+        if (event->scenePos().x() < 0)
+        {
+            return;
+        }
+
         qreal dx = event->scenePos().x() - event->lastScenePos().x();
         qreal dy = event->scenePos().y() - event->lastScenePos().y();
 
