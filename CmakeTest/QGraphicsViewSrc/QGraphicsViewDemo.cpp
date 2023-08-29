@@ -187,6 +187,8 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 {
     //setBtnEnabled(false);
     m_view->addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
+    connect(m_view, &QGraphicsViewBasic::ItemFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_view, &QGraphicsViewBasic::ItemFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
     /*connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);*/
@@ -350,10 +352,10 @@ void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
     case QGraphicsItemBasic::ItemType::Arc: {
         BArc* pie = dynamic_cast<BArc*>(item);
         type->setText("Ô²»¡");
-        center_x->setText(QString::number(pie->mapToScene(pie->getCenter()).x()));
+        /*center_x->setText(QString::number(pie->mapToScene(pie->getCenter()).x()));
         center_y->setText(QString::number(pie->mapToScene(pie->getCenter()).y()));
         edge_x->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).x()));
-        edge_y->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).y()));
+        edge_y->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).y()));*/
     } break;
     case QGraphicsItemBasic::ItemType::Rectangle: {
         BRectangle* rectangle = dynamic_cast<BRectangle*>(item);

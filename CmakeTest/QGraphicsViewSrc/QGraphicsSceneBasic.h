@@ -28,7 +28,7 @@ protected:
     virtual void wheelEvent(QGraphicsSceneWheelEvent* event) override;
   
 signals:
-    void updatePoint(QPointF p, QList<QPointF> list, bool isCenter);
+    //void updatePoint(QPointF p, QList<QPointF> list, bool isCenter);
     void updatePoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
     void createBPolygonFinished();
     void createBMixArcLineItemsFinished();

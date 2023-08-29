@@ -6,7 +6,7 @@
 #include <QWidgetAction>
 
 QGraphicsItemBasic::QGraphicsItemBasic(ItemType type)
-    : m_type(type)
+    : m_type(type), m_connectFocus(false)
 {
     m_pen_noSelected.setColor(QColor(220, 220, 220));
     m_pen_noSelected.setWidth(2);
@@ -23,7 +23,7 @@ QGraphicsItemBasic::QGraphicsItemBasic(ItemType type)
 }
 
 QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPointF> edges, ItemType type)
-    : m_center(center), m_edge(edge), m_edges(edges), m_type(type)
+    : m_center(center), m_edge(edge), m_edges(edges), m_type(type), m_connectFocus(false)
 {
     m_pen_noSelected.setColor(QColor(220, 220, 220));
     m_pen_noSelected.setWidth(2);
@@ -56,7 +56,7 @@ QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPoin
 int QGraphicsItemBasic::getEdgeIndex(BPointItem* pointItem) const
 {
     for (int i = 0; i < m_edges.size(); i++) {
-        if (m_pointList[i]->m_point == pointItem->m_point) {
+        if (m_pointList[i]->getPoint() == pointItem->getPoint()) {
             return i;
         }
     }
@@ -1052,299 +1052,299 @@ void BPolygon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 
 //------------------------------------------------------------------------------
 
-BMixArcLine::BMixArcLine(ItemType type)
-    : BPolygon(type)
-{
-    is_create_finished = false;
-    m_radiuses.append(MIXRADIUS);
-}
-
-void BMixArcLine::pushPoint(QPointF p, QList<QPointF> list, PointType pointType)
-{
-    if (!is_create_finished) {
-        m_center = getCentroid(list);
-        getMaxLength();
-
-        if (pointType == PointType::Center) {
-            m_pointList[m_pointList.size() - 1]->setPoint(m_center);
-            m_pointList[m_pointList.size() - 1]->m_type = BPointItem::PointType::Center;
-
-            m_pointList.setRandColor();
-            m_pointArcList.setRandColor();
-            is_create_finished = true;
-            //this->setItemPosInScene(m_center);
-        }
-        else if (pointType == PointType::ArcEdgeEnd)
-        {
-            m_edges.append(p);
-
-            BPointItem* pointSpecial = new BPointItem(this, (list[list.size() - 2] + p) / 2, BPointItem::PointType::Special);
-            pointSpecial->setParentItem(this);
-            m_pointArcList.append(pointSpecial);
-
-            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::ArcEdge);
-            point->setParentItem(this);
-            m_pointList.append(point);
-
-
-            //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(QColor(0, 255, 0));
-
-            m_center = getCentroid(list);
-            getMaxLength();
-
-            m_radiuses.append(MIXRADIUS);
-            m_radiuses.append(MIXRADIUS);
-        }
-        else  
-        {
-            m_edges.append(p);
-            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
-            point->setParentItem(this);
-            m_pointList.append(point);
-
-            //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(QColor(0, 255, 0));
-
-            m_center = getCentroid(list);
-            getMaxLength();
-
-            m_radiuses.append(MIXRADIUS);
-        }
-
-        this->update();
-    }
-}
-
-void BMixArcLine::movePoint(QPointF p, QList<QPointF> list, PointType pointType)
-{
-    if (!is_create_finished) {
-        m_center = getCentroid(list);
-        getMaxLength();
-
-        if (pointType == PointType::ArcEdgeEnd)
-        {
-            //m_edges.append(p);
-            BPointItem* point = m_pointList.at(m_pointList.size() - 1);
-            point->setParentItem(this);
-            point->setPoint(p);
-            point->m_type = BPointItem::PointType::ArcEdge;
-            m_pointList.replace(m_pointList.size() - 1, point);
-
-            //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(QColor(0, 255, 0));
-
-            m_center = getCentroid(list);
-            getMaxLength();
-
-            //m_radiuses.replace(m_radiuses.size() - 1,MIXRADIUS);
-        }
-        else
-        {
-            //m_edges.append(p);
-            BPointItem* point = m_pointList.at(m_pointList.size() - 1);
-            point->setParentItem(this);
-            point->setPoint(p);
-            point->m_type = BPointItem::PointType::Edge;
-            m_pointList.replace(m_pointList.size() - 1, point);
-
-            //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(QColor(0, 255, 0));
-
-            m_center = getCentroid(list);
-            getMaxLength();
-        }
-
-        this->update();
-    }
-}
-
-
-void BMixArcLine::updateMixArcLine(QPointF origin, QPointF end)
-{
-    QList<QPointF> list;
-
-    for (auto& temp : m_pointList) {
-        if (temp->getPoint() == origin) {
-            temp->setPoint(end);
-
-        }
-        list.append(temp->getPoint());
-    }
-
-    m_center = getCentroid(list);
-
-    //setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
-
-
-    m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
-
-    getMaxLength();
-
-    update();
-}
-
-QPainterPath BMixArcLine::getArc(QPointF origin, QPointF end, qreal& radius) const
-{
-    QPainterPath path;
-
-    path.moveTo(end);
-
-    // 计算两点的中点
-    QPointF midpoint = (origin + end) / 2.0;
-
-    // 计算两点之间的距离
-    qreal distance = sqrt(pow(end.x() - origin.x(), 2) + pow(end.y() - origin.y(), 2));
-
-    // 如果给定的半径小于两点之间距离的一半，那么不能画出一个经过这两个点的圆弧
-    while (radius < distance / 2) {
-        radius++;
-    }
-
-    //如果给定的半径大于两点之间距离的一半，那么锁定半径对圆心位置进行更改
-    if (radius > distance / 2)
-    {
-        midpoint = getCircleCenter(origin, end, radius);
-    }
-
-    // 计算包含圆弧的矩形
-    QRectF rect(midpoint.x() - radius, midpoint.y() - radius, 2 * radius, 2 * radius);
-
-    // 计算起始角度和跨越角度
-    qreal startAngle = - atan2(end.y() - midpoint.y(), end.x() - midpoint.x()) * 180 / M_PI;
-    qreal endAngle =  - atan2(origin.y() - midpoint.y(), origin.x() - midpoint.x()) * 180 / M_PI;
-    qreal spanAngle = endAngle - startAngle;
-
-    //// 调整角度到[0, 360]的范围
-    //if (startAngle < 0) startAngle += 360;
-    //if (endAngle < 0) endAngle += 360;
-    //if (spanAngle < 0) spanAngle += 360;
-
-    // 添加圆弧到路径
-    path.arcTo(rect, startAngle, spanAngle);
-
-    return path;
-}
-
-QPointF BMixArcLine::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
-{
-    // 计算圆心坐标
-    QPointF center;
-
-    qreal d = QLineF(origin, end).length();
-    qreal h = sqrt(radius * radius - (d * d) / 4);
-
-    // 计算中点
-    QPointF midPoint = (origin + end) / 2;
-
-    // 计算垂直向量
-    qreal vx = -(end.y() - origin.y());
-    qreal vy = end.x() - origin.x();
-
-    // 计算圆心
-    center.setX(midPoint.x() + h * vx / d);
-    center.setY(midPoint.y() + h * vy / d);
-
-    return center;
-}
-
-QRectF BMixArcLine::boundingRect() const
-{
-    return QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 4, m_radius * 4);
-}
-
-QPainterPath BMixArcLine::shape() const
-{
-    QPainterPath m_path;
-    m_path.moveTo(m_pointList.at(0)->getPoint());
-    //qDebug() << m_path.elementCount() << "  0";
-
-    if (is_create_finished) {
-        for (int i = 1; i < m_pointList.size() - 1; i++)
-        {
-            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
-            {
-                m_path.lineTo(m_pointList.at(i)->getPoint());
-                m_path.moveTo(m_pointList.at(i)->getPoint());
-            }
-            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
-            {
-                //m_path.lineTo(m_pointList.at(i)->getPoint());
-                m_path.addPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
-                m_path.moveTo(m_pointList.at(i)->getPoint());
-            }
-            //qDebug() << m_path.elementCount() << "  " << i;
-        }
-
-        m_path.lineTo(m_pointList.at(0)->getPoint());
-        //qDebug() << m_path.elementCount() << "  end";
-    }
-    else {
-        for (int i = 1; i < m_pointList.size(); i++)
-        {
-            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
-            {
-                m_path.lineTo(m_pointList.at(i)->getPoint());
-                m_path.moveTo(m_pointList.at(i)->getPoint());
-            }
-            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
-            {
-                //m_path.lineTo(m_pointList.at(i)->getPoint());
-                m_path.addPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
-                m_path.moveTo(m_pointList.at(i)->getPoint());
-            }
-        }
-    }
-
-
-
-    QPainterPathStroker stroker;
-    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
-    //qDebug() << stroker.createStroke(m_path).elementCount();
-    return stroker.createStroke(m_path);
-}
-
-void BMixArcLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(this->pen());
-    painter->setBrush(this->brush());
-
-    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
-    //painter->fillRect(boundingRect(), QBrush(QColor(99, 184, 255)));
-
-    if (is_create_finished) {
-        for (int i = 1; i < m_pointList.size() - 1; i++)
-        {
-            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
-            {
-                painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
-            }
-            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
-            {
-                painter->drawPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
-            }
-
-        }
-
-        painter->drawLine(m_pointList.at(m_pointList.size() - 2)->getPoint(), m_pointList.at(0)->getPoint());
-    }
-    else {
-        for (int i = 1; i < m_pointList.size(); i++)
-        {
-            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
-            {
-                painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
-            }
-            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
-            {
-                painter->drawPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
-            }
-            
-        }
-    }
-}
+//BMixArcLine::BMixArcLine(ItemType type)
+//    : BPolygon(type)
+//{
+//    is_create_finished = false;
+//    m_radiuses.append(MIXRADIUS);
+//}
+//
+//void BMixArcLine::pushPoint(QPointF p, QList<QPointF> list, PointType pointType)
+//{
+//    if (!is_create_finished) {
+//        m_center = getCentroid(list);
+//        getMaxLength();
+//
+//        if (pointType == PointType::Center) {
+//            m_pointList[m_pointList.size() - 1]->setPoint(m_center);
+//            m_pointList[m_pointList.size() - 1]->m_type = BPointItem::PointType::Center;
+//
+//            m_pointList.setRandColor();
+//            m_pointArcList.setRandColor();
+//            is_create_finished = true;
+//            //this->setItemPosInScene(m_center);
+//        }
+//        else if (pointType == PointType::ArcEdgeEnd)
+//        {
+//            m_edges.append(p);
+//
+//            BPointItem* pointSpecial = new BPointItem(this, (list[list.size() - 2] + p) / 2, BPointItem::PointType::Special);
+//            pointSpecial->setParentItem(this);
+//            m_pointArcList.append(pointSpecial);
+//
+//            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::ArcEdge);
+//            point->setParentItem(this);
+//            m_pointList.append(point);
+//
+//
+//            //m_itemedgePosInScene.append(point->pos());
+//            m_pointList.setColor(QColor(0, 255, 0));
+//
+//            m_center = getCentroid(list);
+//            getMaxLength();
+//
+//            m_radiuses.append(MIXRADIUS);
+//            m_radiuses.append(MIXRADIUS);
+//        }
+//        else  
+//        {
+//            m_edges.append(p);
+//            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
+//            point->setParentItem(this);
+//            m_pointList.append(point);
+//
+//            //m_itemedgePosInScene.append(point->pos());
+//            m_pointList.setColor(QColor(0, 255, 0));
+//
+//            m_center = getCentroid(list);
+//            getMaxLength();
+//
+//            m_radiuses.append(MIXRADIUS);
+//        }
+//
+//        this->update();
+//    }
+//}
+//
+//void BMixArcLine::movePoint(QPointF p, QList<QPointF> list, PointType pointType)
+//{
+//    if (!is_create_finished) {
+//        m_center = getCentroid(list);
+//        getMaxLength();
+//
+//        if (pointType == PointType::ArcEdgeEnd)
+//        {
+//            //m_edges.append(p);
+//            BPointItem* point = m_pointList.at(m_pointList.size() - 1);
+//            point->setParentItem(this);
+//            point->setPoint(p);
+//            point->m_type = BPointItem::PointType::ArcEdge;
+//            m_pointList.replace(m_pointList.size() - 1, point);
+//
+//            //m_itemedgePosInScene.append(point->pos());
+//            m_pointList.setColor(QColor(0, 255, 0));
+//
+//            m_center = getCentroid(list);
+//            getMaxLength();
+//
+//            //m_radiuses.replace(m_radiuses.size() - 1,MIXRADIUS);
+//        }
+//        else
+//        {
+//            //m_edges.append(p);
+//            BPointItem* point = m_pointList.at(m_pointList.size() - 1);
+//            point->setParentItem(this);
+//            point->setPoint(p);
+//            point->m_type = BPointItem::PointType::Edge;
+//            m_pointList.replace(m_pointList.size() - 1, point);
+//
+//            //m_itemedgePosInScene.append(point->pos());
+//            m_pointList.setColor(QColor(0, 255, 0));
+//
+//            m_center = getCentroid(list);
+//            getMaxLength();
+//        }
+//
+//        this->update();
+//    }
+//}
+//
+//
+//void BMixArcLine::updateMixArcLine(QPointF origin, QPointF end)
+//{
+//    QList<QPointF> list;
+//
+//    for (auto& temp : m_pointList) {
+//        if (temp->getPoint() == origin) {
+//            temp->setPoint(end);
+//
+//        }
+//        list.append(temp->getPoint());
+//    }
+//
+//    m_center = getCentroid(list);
+//
+//    //setItemPosInScene(m_pointList.at(m_pointList.size() - 1)->mapToScene(getCentroid(list)) - getCenter());
+//
+//
+//    m_pointList.at(m_pointList.size() - 1)->setPoint(m_center);
+//
+//    getMaxLength();
+//
+//    update();
+//}
+//
+//QPainterPath BMixArcLine::getArc(QPointF origin, QPointF end, qreal& radius) const
+//{
+//    QPainterPath path;
+//
+//    path.moveTo(end);
+//
+//    // 计算两点的中点
+//    QPointF midpoint = (origin + end) / 2.0;
+//
+//    // 计算两点之间的距离
+//    qreal distance = sqrt(pow(end.x() - origin.x(), 2) + pow(end.y() - origin.y(), 2));
+//
+//    // 如果给定的半径小于两点之间距离的一半，那么不能画出一个经过这两个点的圆弧
+//    while (radius < distance / 2) {
+//        radius++;
+//    }
+//
+//    //如果给定的半径大于两点之间距离的一半，那么锁定半径对圆心位置进行更改
+//    if (radius > distance / 2)
+//    {
+//        midpoint = getCircleCenter(origin, end, radius);
+//    }
+//
+//    // 计算包含圆弧的矩形
+//    QRectF rect(midpoint.x() - radius, midpoint.y() - radius, 2 * radius, 2 * radius);
+//
+//    // 计算起始角度和跨越角度
+//    qreal startAngle = - atan2(end.y() - midpoint.y(), end.x() - midpoint.x()) * 180 / M_PI;
+//    qreal endAngle =  - atan2(origin.y() - midpoint.y(), origin.x() - midpoint.x()) * 180 / M_PI;
+//    qreal spanAngle = endAngle - startAngle;
+//
+//    //// 调整角度到[0, 360]的范围
+//    //if (startAngle < 0) startAngle += 360;
+//    //if (endAngle < 0) endAngle += 360;
+//    //if (spanAngle < 0) spanAngle += 360;
+//
+//    // 添加圆弧到路径
+//    path.arcTo(rect, startAngle, spanAngle);
+//
+//    return path;
+//}
+//
+//QPointF BMixArcLine::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
+//{
+//    // 计算圆心坐标
+//    QPointF center;
+//
+//    qreal d = QLineF(origin, end).length();
+//    qreal h = sqrt(radius * radius - (d * d) / 4);
+//
+//    // 计算中点
+//    QPointF midPoint = (origin + end) / 2;
+//
+//    // 计算垂直向量
+//    qreal vx = -(end.y() - origin.y());
+//    qreal vy = end.x() - origin.x();
+//
+//    // 计算圆心
+//    center.setX(midPoint.x() + h * vx / d);
+//    center.setY(midPoint.y() + h * vy / d);
+//
+//    return center;
+//}
+//
+//QRectF BMixArcLine::boundingRect() const
+//{
+//    return QRectF(m_center.x() - m_radius, m_center.y() - m_radius, m_radius * 4, m_radius * 4);
+//}
+//
+//QPainterPath BMixArcLine::shape() const
+//{
+//    QPainterPath m_path;
+//    m_path.moveTo(m_pointList.at(0)->getPoint());
+//    //qDebug() << m_path.elementCount() << "  0";
+//
+//    if (is_create_finished) {
+//        for (int i = 1; i < m_pointList.size() - 1; i++)
+//        {
+//            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
+//            {
+//                m_path.lineTo(m_pointList.at(i)->getPoint());
+//                m_path.moveTo(m_pointList.at(i)->getPoint());
+//            }
+//            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
+//            {
+//                //m_path.lineTo(m_pointList.at(i)->getPoint());
+//                m_path.addPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
+//                m_path.moveTo(m_pointList.at(i)->getPoint());
+//            }
+//            //qDebug() << m_path.elementCount() << "  " << i;
+//        }
+//
+//        m_path.lineTo(m_pointList.at(0)->getPoint());
+//        //qDebug() << m_path.elementCount() << "  end";
+//    }
+//    else {
+//        for (int i = 1; i < m_pointList.size(); i++)
+//        {
+//            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
+//            {
+//                m_path.lineTo(m_pointList.at(i)->getPoint());
+//                m_path.moveTo(m_pointList.at(i)->getPoint());
+//            }
+//            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
+//            {
+//                //m_path.lineTo(m_pointList.at(i)->getPoint());
+//                m_path.addPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
+//                m_path.moveTo(m_pointList.at(i)->getPoint());
+//            }
+//        }
+//    }
+//
+//
+//
+//    QPainterPathStroker stroker;
+//    stroker.setWidth(SELECTWIDTH); // 设置线框宽度
+//    //qDebug() << stroker.createStroke(m_path).elementCount();
+//    return stroker.createStroke(m_path);
+//}
+//
+//void BMixArcLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+//{
+//    Q_UNUSED(option);
+//    Q_UNUSED(widget);
+//    painter->setPen(this->pen());
+//    painter->setBrush(this->brush());
+//
+//    painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
+//    //painter->fillRect(boundingRect(), QBrush(QColor(99, 184, 255)));
+//
+//    if (is_create_finished) {
+//        for (int i = 1; i < m_pointList.size() - 1; i++)
+//        {
+//            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
+//            {
+//                painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
+//            }
+//            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
+//            {
+//                painter->drawPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
+//            }
+//
+//        }
+//
+//        painter->drawLine(m_pointList.at(m_pointList.size() - 2)->getPoint(), m_pointList.at(0)->getPoint());
+//    }
+//    else {
+//        for (int i = 1; i < m_pointList.size(); i++)
+//        {
+//            if (m_pointList.at(i)->m_type == BPointItem::PointType::Edge)
+//            {
+//                painter->drawLine(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint());
+//            }
+//            else if (m_pointList.at(i)->m_type == BPointItem::PointType::ArcEdge)
+//            {
+//                painter->drawPath(getArc(m_pointList.at(i - 1)->getPoint(), m_pointList.at(i)->getPoint(), m_radiuses[i]));
+//            }
+//            
+//        }
+//    }
+//}
 
 //------------------------------------------------------------------------------
 
@@ -1546,7 +1546,6 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
                                              m_pointList[m_pointList.size() - 1]->getPoint(), 
                                              ItemType::Arc, true));
             }
-            checkPointList();
                 
         }
         else
@@ -1569,9 +1568,11 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
                                               m_pointList[m_pointList.size() - 1]->getPoint(), 
                                               ItemType::Line, true));
             }
-            checkPointList();
-        }
+            
 
+        }
+        checkPointList();
+        emit groupChanged(m_Items);
         this->update();
     }
 }
@@ -1628,7 +1629,7 @@ void BMixArcLineItems::updateMixArcLineItems(QPointF origin, QPointF end, BPoint
             }
         }
         checkPointList();
-
+        emit groupChanged(m_Items);
     }
     
     //QList<QPointF> list;
@@ -1658,6 +1659,8 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         QPointF pos = event->scenePos();
         QList<QGraphicsItem*> items = m_Items->childItems();
+        BArc* tempPie = nullptr;
+        BLine* tempLine = nullptr;
         for (QGraphicsItem* item : items) {
             QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(item);
             QGraphicsItemBasic::ItemType itemType = customItem->getType();
@@ -1667,7 +1670,8 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
                 BArc* pie = dynamic_cast<BArc*>(customItem);
                 if (pie->shape().contains(pos)) {
                     pie->setSelected(true);
-                    pie->focusInEvent(nullptr);
+                    tempPie = pie;
+                    //pie->focusInEvent(nullptr);
                     //pie->setFocus(Qt::MouseFocusReason);
                 }
                 else {
@@ -1680,7 +1684,8 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
                 BLine* line = dynamic_cast<BLine*>(customItem);
                 if (line->shape().contains(pos)) {
                     line->setSelected(true);
-                    line->focusInEvent(nullptr);
+                    tempLine = line;
+                    //line->focusInEvent(nullptr);
                     //line->setFocus(Qt::MouseFocusReason);
                 }
                 else {
@@ -1692,6 +1697,14 @@ void BMixArcLineItems::mousePressEvent(QGraphicsSceneMouseEvent* event)
             default:
                 break;
             }
+        }
+        if (tempPie)
+        {
+            tempPie->focusInEvent(nullptr);
+        }
+        if (tempLine)
+        {
+            tempLine->focusInEvent(nullptr);
         }
     }
     QGraphicsItemBasic::mousePressEvent(event);

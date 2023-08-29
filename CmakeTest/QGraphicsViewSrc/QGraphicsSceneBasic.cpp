@@ -59,7 +59,7 @@ void QGraphicsSceneBasic::isShowColorItem(bool b)
 
 void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-    if (is_creating_BPolygon) {
+    /*if (is_creating_BPolygon) {
         QPointF p(event->scenePos().x(), event->scenePos().y());
 
         switch (event->buttons())
@@ -78,8 +78,8 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
         } break;
         default: break;
         }
-    }
-    else if (is_creating_BMixArcLineItems)
+    }*/
+    if (is_creating_BMixArcLineItems)
     {
         QPointF p(event->scenePos().x(), event->scenePos().y());
 

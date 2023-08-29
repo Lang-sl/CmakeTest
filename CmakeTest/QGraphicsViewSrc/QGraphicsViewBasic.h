@@ -7,12 +7,24 @@
 
 class QGraphicsViewBasic : public QGraphicsView
 {
+    Q_OBJECT
 public:
     QGraphicsViewBasic(QWidget* parent = nullptr);
 
     void addItem(QGraphicsItemBasic::ItemType itemType);
 
     void clear();
+
+Q_SIGNALS:
+    void ItemFocusIn(QGraphicsItemBasic* i);
+
+    void ItemFocusOut(QGraphicsItemBasic* i);
+
+
+public slots:
+    void bindItemFocus(QGraphicsItemGroup* group);
+    void itemIsFocusIn(QGraphicsItemBasic* i);
+    void itemIsFocusOut(QGraphicsItemBasic* i);
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;

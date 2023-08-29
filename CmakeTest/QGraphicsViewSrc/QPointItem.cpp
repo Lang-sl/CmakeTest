@@ -133,8 +133,8 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
                 polygon->updatePolygon(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
             } break;
             case QGraphicsItemBasic::ItemType::MixArcLine: {
-                BMixArcLine* mixArcLine = dynamic_cast<BMixArcLine*>(item);
-                mixArcLine->updateMixArcLine(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));
+                /*BMixArcLine* mixArcLine = dynamic_cast<BMixArcLine*>(item);
+                mixArcLine->updateMixArcLine(QPointF(event->lastScenePos().x(), event->lastScenePos().y()), QPointF(event->scenePos().x(), event->scenePos().y()));*/
             }
             case QGraphicsItemBasic::ItemType::MixArcLineItems: {
                 BMixArcLineItems* mixArcLineItems = dynamic_cast<BMixArcLineItems*>(item);

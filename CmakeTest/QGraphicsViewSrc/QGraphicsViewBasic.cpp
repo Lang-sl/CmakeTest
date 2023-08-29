@@ -32,15 +32,43 @@ void QGraphicsViewBasic::addItem(QGraphicsItemBasic::ItemType itemType)
         m_scene->addItem(m_mixArcLineItems->getItemsGroup());
         m_scene->addItem(m_mixArcLineItems->getStartEndGroup());
         m_scene->addItem(m_mixArcLineItems);
-        connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
+        connect(m_mixArcLineItems, &BMixArcLineItems::groupChanged, this, &QGraphicsViewBasic::bindItemFocus);
+        connect(m_scene, &QGraphicsSceneBasic::updatePoint, m_mixArcLineItems, &BMixArcLineItems::pushPoint);
     }
     //m_scene->addItem(item);
+}
+
+void QGraphicsViewBasic::bindItemFocus(QGraphicsItemGroup* group)
+{
+    QList<QGraphicsItem*> items = group->childItems();
+    for (QGraphicsItem* item : items) {
+        QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(item);
+        if (!customItem->getConnectFocus())
+        {
+            // 信号未连接，进行绑定
+            connect(customItem, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewBasic::itemIsFocusIn);
+            connect(customItem, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewBasic::itemIsFocusOut);
+            customItem->setConnectFocus(true);
+        }
+    }
 }
 
 void QGraphicsViewBasic::clear()
 {
     m_scene->clear();
     m_scene->addCoordinateSystem();
+}
+
+void QGraphicsViewBasic::itemIsFocusIn(QGraphicsItemBasic* i)
+{
+    qDebug() << "view Focus In";
+    emit ItemFocusIn(i);
+}
+
+void QGraphicsViewBasic::itemIsFocusOut(QGraphicsItemBasic* i)
+{
+    qDebug() << "view Focus Out";
+    emit ItemFocusOut(i);
 }
 
 void QGraphicsViewBasic::mousePressEvent(QMouseEvent* event)

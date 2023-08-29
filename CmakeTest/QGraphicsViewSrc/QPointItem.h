@@ -42,7 +42,7 @@ protected:
     virtual void focusInEvent(QFocusEvent* event) override;
     virtual void focusOutEvent(QFocusEvent* event) override;
 
-public:
+private:
     QPointF m_point;
     PointType m_type;
 

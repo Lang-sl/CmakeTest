@@ -64,6 +64,8 @@ public:
     void setColor(QColor c) { m_innercolor = c; m_innercolor_copy = c; }*/
 
     bool getDragOver() { return m_dragOver; }
+    bool getConnectFocus() { return m_connectFocus; }
+    void setConnectFocus(bool b) { m_connectFocus = b; }
 
 Q_SIGNALS:
     void isFocusIn(QGraphicsItemBasic* i);
@@ -101,6 +103,7 @@ protected:
     QColor m_innercolor_copy;*/
 
     bool m_dragOver;
+    bool m_connectFocus;
 
     friend class QGraphicsViewDemo;
     friend class BMixArcLineItems;
@@ -353,44 +356,44 @@ public:
 //------------------------------------------------------------------------------
 
 // 混合直线圆弧
-class BMixArcLine : public BPolygon
-{
-    Q_OBJECT
-
-public:
-    BMixArcLine(ItemType type);
-
-    enum class PointType {
-        LineEdgeEnd = 0,         // 直线终点
-        ArcEdgeEnd,              // 圆弧终点
-        Center                   // 质心
-    };
-
-    void updateMixArcLine(QPointF origin, QPointF end);
-
-    QPainterPath getArc(QPointF origin, QPointF end, qreal& radius) const;
-
-    QPointF getCircleCenter(QPointF origin, QPointF end, qreal radius) const;
-
-public slots:
-    void pushPoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
-
-    void movePoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
-
-protected:
-    
-    virtual QRectF boundingRect() const override;
-
-    virtual QPainterPath shape() const;
-
-    virtual void paint(QPainter* painter,
-        const QStyleOptionGraphicsItem* option,
-        QWidget* widget) override;
-
-public:
-    mutable QList<qreal> m_radiuses;
-    BPointItemList m_pointArcList;
-};
+//class BMixArcLine : public BPolygon
+//{
+//    Q_OBJECT
+//
+//public:
+//    BMixArcLine(ItemType type);
+//
+//    enum class PointType {
+//        LineEdgeEnd = 0,         // 直线终点
+//        ArcEdgeEnd,              // 圆弧终点
+//        Center                   // 质心
+//    };
+//
+//    void updateMixArcLine(QPointF origin, QPointF end);
+//
+//    QPainterPath getArc(QPointF origin, QPointF end, qreal& radius) const;
+//
+//    QPointF getCircleCenter(QPointF origin, QPointF end, qreal radius) const;
+//
+//public slots:
+//    void pushPoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
+//
+//    void movePoint(QPointF p, QList<QPointF> list, BMixArcLine::PointType pointType);
+//
+//protected:
+//    
+//    virtual QRectF boundingRect() const override;
+//
+//    virtual QPainterPath shape() const;
+//
+//    virtual void paint(QPainter* painter,
+//        const QStyleOptionGraphicsItem* option,
+//        QWidget* widget) override;
+//
+//public:
+//    mutable QList<qreal> m_radiuses;
+//    BPointItemList m_pointArcList;
+//};
 //------------------------------------------------------------------------------
 // 
 // 混合直线圆弧(重构版)
@@ -436,7 +439,7 @@ public:
     }
 
 Q_SIGNALS:
-
+    void groupChanged(QGraphicsItemGroup* group);
 
 public slots:
     void pushPoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
