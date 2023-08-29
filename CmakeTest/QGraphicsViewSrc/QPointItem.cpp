@@ -41,21 +41,37 @@ void BPointItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     painter->setBrush(this->brush());
     this->setPos(m_point);
 
+    // 计算相对于 y 轴的对称点坐标
+    QPointF mirroredPoint = this->mapFromScene(QPointF(-m_point.x(), m_point.y()));
+
+    // 绘制原始点
     switch (m_type) {
     case PointType::Center:
         painter->drawEllipse(-4, -4, 8, 8);
         break;
     case PointType::Edge:
-        painter->drawRect(QRectF(-4, -4, 8, 8));
-        break;
     case PointType::Special:
-        painter->drawRect(QRectF(-4, -4, 8, 8));
-        break;
     case PointType::ArcEdge:
         painter->drawRect(QRectF(-4, -4, 8, 8));
         break;
     default: break;
     }
+
+    // 绘制相对于 y 轴的对称点
+    painter->save();  // 保存当前的绘图状态
+    painter->translate(mirroredPoint);  // 将坐标系平移至对称点位置
+    switch (m_type) {
+    case PointType::Center:
+        painter->drawEllipse(-4, -4, 8, 8);
+        break;
+    case PointType::Edge:
+    case PointType::Special:
+    case PointType::ArcEdge:
+        painter->drawRect(QRectF(-4, -4, 8, 8));
+        break;
+    default: break;
+    }
+    painter->restore();  // 恢复之前的绘图状态
 }
 
 void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
@@ -126,7 +142,7 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
             m_point = this->mapToParent(event->pos());
             this->setPos(m_point);
             this->scene()->update();
-            item->focusInEvent(nullptr);
+            //item->focusInEvent(nullptr);
             switch (itemType) {
             case QGraphicsItemBasic::ItemType::Arc: {
                 BArc* pie = dynamic_cast<BArc*>(item);
@@ -146,14 +162,25 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void BPointItem::focusInEvent(QFocusEvent* event)
 {
+    this->setBrush(QColor(255, 160, 0));
     QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(this->parentItem());
-    item->focusInEvent(nullptr);
+    QGraphicsItemBasic::ItemType itemType = item->getType();
+    switch (itemType) {
+    case QGraphicsItemBasic::ItemType::MixArcLineItems: {
+        BMixArcLineItems* mixArcLineItems = dynamic_cast<BMixArcLineItems*>(item);
+        QList<QGraphicsItem*> items = mixArcLineItems->getItemsGroup()->childItems();
+        for (QGraphicsItem* iitem : items) {
+            QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(iitem);
+            customItem->focusOutEvent(nullptr);
+        }
+    }
+    default: break;
+    }
 }
 
 void BPointItem::focusOutEvent(QFocusEvent* event)
 {
-    QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(this->parentItem());
-    item->focusOutEvent(nullptr);
+    this->setBrush(QColor(220, 220, 220));
 }
 
 //------------------------------------------------------------------------------

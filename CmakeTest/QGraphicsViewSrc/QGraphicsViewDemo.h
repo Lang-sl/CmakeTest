@@ -53,7 +53,6 @@ private:
     
     Ui::QGraphicsViewDemo ui;
 
-    QGraphicsSceneBasic* m_scene;
     QGraphicsViewBasic* m_view;
 
     QDockWidget* leftNavigationDock;

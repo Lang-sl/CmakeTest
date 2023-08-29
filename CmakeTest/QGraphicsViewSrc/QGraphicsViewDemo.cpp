@@ -12,10 +12,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     setFixedSize(1024, 768);
 
     m_showColorItem = true;
-    m_scene = new QGraphicsSceneBasic(this);
     m_view = new QGraphicsViewBasic(this);
-    m_scene->setBackgroundBrush(QBrush("#F8F8FF"));
-    m_view->setScene(m_scene);
     setCentralWidget(m_view);
 
     leftNavigationDock = new QDockWidget(tr("¹¤¾ßÀ¸"), this);
@@ -115,7 +112,7 @@ QGraphicsViewDemo::~QGraphicsViewDemo()
 void QGraphicsViewDemo::on_circleBtn_clicked()
 {
     BCircle* m_circle = new BCircle(0, 0, 50, QGraphicsItemBasic::ItemType::Circle);
-    m_scene->addItem(m_circle);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Circle);
     connect(m_circle, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_circle, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -123,7 +120,7 @@ void QGraphicsViewDemo::on_circleBtn_clicked()
 void QGraphicsViewDemo::on_ellipseBtn_clicked()
 {
     BEllipse* m_ellipse = new BEllipse(0, 0, 120, 80, QGraphicsItemBasic::ItemType::Ellipse);
-    m_scene->addItem(m_ellipse);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Ellipse);
     connect(m_ellipse, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_ellipse, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -131,7 +128,7 @@ void QGraphicsViewDemo::on_ellipseBtn_clicked()
 void QGraphicsViewDemo::on_pieBtn_clicked()
 {
     BArc* m_pie = new BArc(0, 0, 80, -30, 30, QGraphicsItemBasic::ItemType::Arc);
-    m_scene->addItem(m_pie);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Arc);
     connect(m_pie, &BArc::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_pie, &BArc::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -139,7 +136,7 @@ void QGraphicsViewDemo::on_pieBtn_clicked()
 void QGraphicsViewDemo::on_squareBtn_clicked()
 {
     BSquare* m_square = new BSquare(0, 0, 60, QGraphicsItemBasic::ItemType::Square);
-    m_scene->addItem(m_square);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Square);
     connect(m_square, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_square, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -147,23 +144,20 @@ void QGraphicsViewDemo::on_squareBtn_clicked()
 void QGraphicsViewDemo::on_rectangleBtn_clicked()
 {
     BRectangle* m_rectangle = new BRectangle(0, 0, 80, 60, QGraphicsItemBasic::ItemType::Rectangle);
-    m_scene->addItem(m_rectangle);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Rectangle);
     connect(m_rectangle, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_rectangle, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_clearBtn_clicked()
 {
-    m_scene->clear();
-    m_scene->addCoordinateSystem();
-    /*m_scene->addColorItem();
-    m_scene->isShowColorItem(m_showColorItem);*/
+    m_view->clear();
 }
 
 void QGraphicsViewDemo::on_lineBtn_clicked()
 {
     BLine* m_line = new BLine( QPointF(0,0), QPointF(100,100), QGraphicsItemBasic::ItemType::Line);
-    m_scene->addItem(m_line);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Line);
     connect(m_line, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_line, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -171,40 +165,31 @@ void QGraphicsViewDemo::on_lineBtn_clicked()
 void QGraphicsViewDemo::on_pointBtn_clicked()
 {
     BPoint* m_point = new BPoint(QPointF(0, 0), QGraphicsItemBasic::ItemType::Point);
-    m_scene->addItem(m_point);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Point);
     connect(m_point, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_point, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_polygonBtn_clicked()
 {
-    m_scene->startCreateBPolygon();
+    /*m_view->startCreateBPolygon();
     setBtnEnabled(false);
     BPolygon* m_polygon = new BPolygon(QGraphicsItemBasic::ItemType::Polygon);
-    m_scene->addItem(m_polygon);
+    m_view->addItem(m_polygon);
 
     connect(m_polygon, &BPolygon::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_polygon, &BPolygon::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
-    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, bool)), m_polygon, SLOT(pushPoint(QPointF, QList<QPointF>, bool)));
-    connect(m_scene, &QGraphicsSceneBasic::createBPolygonFinished, [=]() { setBtnEnabled(true); });
+    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, bool)), m_polygon, SLOT(pushPoint(QPointF, QList<QPointF>, bool)));*/
 }
 
 void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 {
-    m_scene->startCreateBMixArcLineItems();
     //setBtnEnabled(false);
-    BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems(QGraphicsItemBasic::ItemType::MixArcLineItems);
-    m_scene->addItem(m_mixArcLineItems);
+    m_view->addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
 
-    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
-
-    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
-    connect(m_scene, &QGraphicsSceneBasic::createBMixArcLineItemsFinished, [=]() 
-        { 
-            //setBtnEnabled(true); 
-        });
+    /*connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);*/
 }
 
 //void QGraphicsViewDemo::on_showColorItem_clicked()

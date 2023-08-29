@@ -49,6 +49,10 @@ public:
 
     QList<QPointF> getEdges() { return m_edges; }
     virtual void setEdges(QList<QPointF> p, int i) { m_edges = p; }
+
+    QPointF getEdge() { return m_edge; }
+    void setEdge(QPointF p) { m_edge = p; }
+
     int getEdgeIndex(BPointItem* pointItem) const;
 
 
@@ -211,6 +215,9 @@ public:
     QPointF getCircleCenter(QPointF origin, QPointF end, qreal radius) const;
 
     QPainterPath getArc() const;
+
+    QPointF getOrigin() { return m_origin; }
+    QPointF getEnd() { return m_end; }
 
 protected:
 
@@ -413,6 +420,9 @@ public:
     void convertArcToLine(BArc* arc);
 
     void convertArcToLine(BArc* arc, int i);
+
+    QGraphicsItemGroup* getItemsGroup() { return m_Items; }
+
 Q_SIGNALS:
 
 
@@ -421,6 +431,10 @@ public slots:
 
 protected:
 
+    int findArcIndex(const QList<QGraphicsItem*>& items);
+
+    int findLineIndex(const QList<QGraphicsItem*>& items);
+
     //virtual void focusInEvent(QFocusEvent* event) override;
     //virtual void focusOutEvent(QFocusEvent* event) override;
 
@@ -428,7 +442,7 @@ protected:
 
     virtual QRectF boundingRect() const override;
 
-    virtual QPainterPath shape() const;
+    //virtual QPainterPath shape() const;
 
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,
@@ -438,8 +452,6 @@ private:
     bool is_create_finished;
     qreal m_radius;
     QGraphicsItemGroup* m_Items;
-    QGraphicsItemGroup* m_mirrorItems;
-    BPointItemList m_mirrorPointList;
 
     friend class BPointItem;
 };
