@@ -604,8 +604,11 @@ void BArc::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
     {
         //painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
         painter->drawPath(getArc(m_origin, m_end, m_radius));
+        painter->save();
         //painter->drawPath(getArc(QPointF(- m_origin.x(), m_origin.y()), QPointF(- m_end.x(), m_end.y()), m_radius));
+        painter->setPen(m_pen_noSelected);
         painter->drawArc(QRectF(- m_center.x() - m_radius, m_center.y() - m_radius, 2 * m_radius, 2 * m_radius), (180 - m_startAngle) * 16, (m_startAngle - m_endAngle) * 16);
+        painter->restore();
         return;
     }
 
@@ -850,7 +853,13 @@ void BLine::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWi
 
     //painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
     painter->drawLine(m_center, m_edge);
+    painter->save();
+    if (painter->pen() != QPen(AUTOLINECOLOR))
+    {
+        painter->setPen(m_pen_noSelected);
+    }
     painter->drawLine(QPointF(-m_center.x(), m_center.y()), QPointF(-m_edge.x(), m_edge.y()));
+    painter->restore();
 }
 
 //------------------------------------------------------------------------------
@@ -1480,7 +1489,7 @@ void BMixArcLineItems::checkPointList()
         m_startLine->show();
         m_startLine->setCenter(QPointF(0, m_pointList.at(0)->getPoint().y()));
         m_startLine->setEdge(m_pointList.at(0)->getPoint());
-        m_startLine->setPen(QColor(138, 43, 226));
+        m_startLine->setPen(AUTOLINECOLOR);
     }
     else
     {
@@ -1492,7 +1501,7 @@ void BMixArcLineItems::checkPointList()
         m_endLine->show();
         m_endLine->setCenter(QPointF(0, m_pointList.at(m_pointList.size() - 1)->getPoint().y()));
         m_endLine->setEdge(m_pointList.at(m_pointList.size() - 1)->getPoint());
-        m_endLine->setPen(QColor(138, 43, 226));
+        m_endLine->setPen(AUTOLINECOLOR);
     }
     else
     {

@@ -23,6 +23,8 @@
 #define NOSELECTCOLOR QColor(220, 220, 220)
 #define ISSELECTCOLOR QColor(255, 160, 0)
 
+#define AUTOLINECOLOR QColor(138, 43, 226)
+
 // 自定义图元 - 基础类
 class QGraphicsItemBasic : public QObject, public QAbstractGraphicsShapeItem
 {

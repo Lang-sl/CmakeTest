@@ -60,6 +60,7 @@ void BPointItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
     // 绘制相对于 y 轴的对称点
     painter->save();  // 保存当前的绘图状态
+    painter->setBrush(NOSELECTCOLOR);
     painter->translate(mirroredPoint);  // 将坐标系平移至对称点位置
     switch (m_type) {
     case PointType::Center:
