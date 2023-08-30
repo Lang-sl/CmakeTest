@@ -129,6 +129,11 @@ protected:
         return QRectF(-1000, -1000, 2000, 2000); // 坐标系的边界矩形
     }
 
+    QPainterPath shape() const override
+    {
+        return QPainterPath();
+    }
+
     void paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) override
     {
         QPen pen;
@@ -448,7 +453,7 @@ Q_SIGNALS:
     void groupChanged(QGraphicsItemGroup* group);
 
 public slots:
-    void pushPoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
+    void pushPoint(QPointF p, BMixArcLineItems::PointType pointType);
 
 protected:
 
@@ -463,7 +468,7 @@ protected:
 
     virtual QRectF boundingRect() const override;
 
-    //virtual QPainterPath shape() const;
+    virtual QPainterPath shape() const;
 
     virtual void paint(QPainter* painter,
         const QStyleOptionGraphicsItem* option,

@@ -29,14 +29,13 @@ protected:
   
 signals:
     //void updatePoint(QPointF p, QList<QPointF> list, bool isCenter);
-    void updatePoint(QPointF p, QList<QPointF> list, BMixArcLineItems::PointType pointType);
+    void updatePoint(QPointF p, BMixArcLineItems::PointType pointType);
     void createBPolygonFinished();
     void createBMixArcLineItemsFinished();
 
     void pointIllegal();
 
 protected:
-    QList<QPointF> m_list;
     QList<ColorItem*> m_colorItemList;
     bool is_creating_BPolygon;
 

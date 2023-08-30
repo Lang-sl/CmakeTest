@@ -1509,72 +1509,72 @@ void BMixArcLineItems::checkPointList()
     }
 }
 
-void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType pointType)
+void BMixArcLineItems::pushPoint(QPointF p, PointType pointType)
 {
-    if (!is_create_finished) {
+    if (!m_pointList.isEmpty())
+    {
+        m_center = getCentroid(m_pointList.getQPointFList());
+    }
+    getMaxLength();
 
-        m_center = getCentroid(list);
+    if (pointType == PointType::Center) {
+        /*m_pointList[m_pointList.size() - 1]->setPoint(m_center);
+        m_pointList[m_pointList.size() - 1]->m_type = BPointItem::PointType::Center;*/
+        //m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
+            
+        m_pointList.setColor(NOSELECTCOLOR);
+        is_create_finished = true;
+        //this->setItemPosInScene(m_center);
+    }
+    else if (pointType == PointType::ArcEdgeEnd)
+    {
+        m_edges.append(p);
+
+        BPointItem* point = new BPointItem(this, p, BPointItem::PointType::ArcEdge);
+        point->setParentItem(this);
+        m_pointList.append(point);
+
+
+        //m_itemedgePosInScene.append(point->pos());
+        m_pointList.setColor(NOSELECTCOLOR);
+
+        m_center = getCentroid(m_pointList.getQPointFList());
         getMaxLength();
 
-        if (pointType == PointType::Center) {
-            /*m_pointList[m_pointList.size() - 1]->setPoint(m_center);
-            m_pointList[m_pointList.size() - 1]->m_type = BPointItem::PointType::Center;*/
-            //m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
-            
-            m_pointList.setColor(NOSELECTCOLOR);
-            is_create_finished = true;
-            //this->setItemPosInScene(m_center);
-        }
-        else if (pointType == PointType::ArcEdgeEnd)
+        if (m_pointList.size() > 1)
         {
-            m_edges.append(p);
-
-            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::ArcEdge);
-            point->setParentItem(this);
-            m_pointList.append(point);
-
-
-            //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(NOSELECTCOLOR);
-
-            m_center = getCentroid(list);
-            getMaxLength();
-
-            if (m_pointList.size() > 1)
-            {
-                m_Items->addToGroup(new BArc(m_pointList[m_pointList.size() - 2]->getPoint(), 
-                                             m_pointList[m_pointList.size() - 1]->getPoint(), 
-                                             ItemType::Arc, true));
-            }
+            m_Items->addToGroup(new BArc(m_pointList[m_pointList.size() - 2]->getPoint(), 
+                                            m_pointList[m_pointList.size() - 1]->getPoint(), 
+                                            ItemType::Arc, true));
+        }
                 
-        }
-        else
+    }
+    else
+    {
+        m_edges.append(p);
+        BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
+        point->setParentItem(this);
+        m_pointList.append(point);
+
+        //m_itemedgePosInScene.append(point->pos());
+        m_pointList.setColor(NOSELECTCOLOR);
+
+        m_center = getCentroid(m_pointList.getQPointFList());
+        getMaxLength();
+
+
+        if (m_pointList.size() > 1)
         {
-            m_edges.append(p);
-            BPointItem* point = new BPointItem(this, p, BPointItem::PointType::Edge);
-            point->setParentItem(this);
-            m_pointList.append(point);
-
-            //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(NOSELECTCOLOR);
-
-            m_center = getCentroid(list);
-            getMaxLength();
-
-
-            if (m_pointList.size() > 1)
-            {
-                m_Items->addToGroup(new BLine(m_pointList[m_pointList.size() - 2]->getPoint(),
-                                              m_pointList[m_pointList.size() - 1]->getPoint(), 
-                                              ItemType::Line, true));
-            }
+            m_Items->addToGroup(new BLine(m_pointList[m_pointList.size() - 2]->getPoint(),
+                                            m_pointList[m_pointList.size() - 1]->getPoint(), 
+                                            ItemType::Line, true));
+        }
             
 
-        }
-        checkPointList();
-        emit groupChanged(m_Items);
-        this->update();
     }
+    checkPointList();
+    emit groupChanged(m_Items);
+    this->update();
 }
 
 //void BMixArcLineItems::focusInEvent(QFocusEvent* event)
@@ -1715,31 +1715,31 @@ QRectF BMixArcLineItems::boundingRect() const
     return QRectF(m_center.x() - m_radius * 4, m_center.y() - m_radius * 4, m_radius * 8, m_radius * 8);
 }
 
-//QPainterPath BMixArcLineItems::shape() const
-//{
-//    QPainterPath m_path;
-//
-//    QList<QGraphicsItem*> items = m_Items->childItems();
-//    for (QGraphicsItem* item : items) {
-//        // 调用子项的paint
-//        QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(item);
-//        QGraphicsItemBasic::ItemType itemType = customItem->getType();
-//        switch (itemType)
-//        {
-//        case QGraphicsItemBasic::ItemType::Arc: {
-//            BArc* pie = dynamic_cast<BArc*>(customItem);
-//            m_path.addPath(pie->shape());
-//        }break;
-//        case QGraphicsItemBasic::ItemType::Line: {
-//            BLine* line = dynamic_cast<BLine*>(customItem);
-//            m_path.addPath(line->shape());
-//        }break;
-//        default:
-//            break;
-//        }
-//    }
-//    return m_path;
-//}
+QPainterPath BMixArcLineItems::shape() const
+{
+    QPainterPath m_path;
+
+    QList<QGraphicsItem*> items = m_Items->childItems();
+    for (QGraphicsItem* item : items) {
+        // 调用子项的paint
+        QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(item);
+        QGraphicsItemBasic::ItemType itemType = customItem->getType();
+        switch (itemType)
+        {
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(customItem);
+            m_path.addPath(pie->shape());
+        }break;
+        case QGraphicsItemBasic::ItemType::Line: {
+            BLine* line = dynamic_cast<BLine*>(customItem);
+            m_path.addPath(line->shape());
+        }break;
+        default:
+            break;
+        }
+    }
+    return m_path;
+}
 
 
 void BMixArcLineItems::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -1801,4 +1801,5 @@ void BMixArcLineItems::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     //    }
     //}
 }
+
 

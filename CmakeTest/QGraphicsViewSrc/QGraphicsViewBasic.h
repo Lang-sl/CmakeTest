@@ -31,6 +31,9 @@ protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
+    void contextMenuEvent(QContextMenuEvent* event) override;
+
 private:
     QGraphicsSceneBasic* m_scene;
+    BMixArcLineItems* m_mixArcLineItems = nullptr;
 };
