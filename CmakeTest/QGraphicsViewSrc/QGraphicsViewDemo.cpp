@@ -102,6 +102,9 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     connect(pieBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_pieBtn_clicked);
     connect(polygonBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_polygonBtn_clicked);
     connect(mixArcLineItemsBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked);
+
+    connect(m_view, &QGraphicsViewBasic::ItemFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_view, &QGraphicsViewBasic::ItemFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 QGraphicsViewDemo::~QGraphicsViewDemo()
@@ -187,8 +190,6 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 {
     //setBtnEnabled(false);
     m_view->addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
-    connect(m_view, &QGraphicsViewBasic::ItemFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_view, &QGraphicsViewBasic::ItemFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
     /*connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);*/

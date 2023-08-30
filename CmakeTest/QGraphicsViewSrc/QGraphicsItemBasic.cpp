@@ -1363,10 +1363,8 @@ QPointF BMixArcLineItems::getCentroid(QList<QPointF> list)
     qreal y = 0;
     for (auto& temp : list)
     {
-        x += temp.x();
         y += temp.y();
     }
-    x = x / list.size();
     y = y / list.size();
 
     return QPointF(x, y);
@@ -1509,6 +1507,47 @@ void BMixArcLineItems::checkPointList()
     }
 }
 
+void BMixArcLineItems::fitByCenter()
+{
+    qreal dy = -m_center.y();
+
+    QList<QGraphicsItem*> items = m_Items->childItems();
+    for (QGraphicsItem* item : items) {
+        QGraphicsItemBasic* customItem = dynamic_cast<QGraphicsItemBasic*>(item);
+        QGraphicsItemBasic::ItemType itemType = customItem->getType();
+        switch (itemType)
+        {
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(customItem);
+            pie->m_origin.setY(pie->m_origin.y() + dy);
+            pie->m_end.setY(pie->m_end.y() + dy);
+        }break;
+        case QGraphicsItemBasic::ItemType::Line: {
+            BLine* line = dynamic_cast<BLine*>(customItem);
+            line->m_center.setY(line->m_center.y() + dy);
+            line->m_edge.setY(line->m_edge.y() + dy);
+        }break;
+        default:
+            break;
+        }
+    }
+
+    for (BPointItem* point : m_pointList)
+    {
+        point->m_point.setY(point->m_point.y() + dy);
+        point->update();
+    }
+
+    m_startLine->m_center.setY(m_startLine->m_center.y() + dy);
+    m_startLine->m_edge.setY(m_startLine->m_edge.y() + dy);
+
+    m_endLine->m_center.setY(m_endLine->m_center.y() + dy);
+    m_endLine->m_edge.setY(m_endLine->m_edge.y() + dy);
+
+    m_center.setY(0);
+    update();
+}
+
 void BMixArcLineItems::pushPoint(QPointF p, PointType pointType)
 {
     if (!m_pointList.isEmpty())
@@ -1546,8 +1585,8 @@ void BMixArcLineItems::pushPoint(QPointF p, PointType pointType)
             m_Items->addToGroup(new BArc(m_pointList[m_pointList.size() - 2]->getPoint(), 
                                             m_pointList[m_pointList.size() - 1]->getPoint(), 
                                             ItemType::Arc, true));
+            emit groupChanged(m_Items);
         }
-                
     }
     else
     {
@@ -1568,12 +1607,11 @@ void BMixArcLineItems::pushPoint(QPointF p, PointType pointType)
             m_Items->addToGroup(new BLine(m_pointList[m_pointList.size() - 2]->getPoint(),
                                             m_pointList[m_pointList.size() - 1]->getPoint(), 
                                             ItemType::Line, true));
+            emit groupChanged(m_Items);
         }
-            
 
     }
     checkPointList();
-    emit groupChanged(m_Items);
     this->update();
 }
 

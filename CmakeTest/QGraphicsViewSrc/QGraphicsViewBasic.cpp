@@ -58,6 +58,7 @@ void QGraphicsViewBasic::clear()
 {
     m_scene->clear();
     m_scene->addCoordinateSystem();
+    m_mixArcLineItems = nullptr;
 }
 
 void QGraphicsViewBasic::bindPointFocus(BPointItem* item)
@@ -131,24 +132,31 @@ void QGraphicsViewBasic::contextMenuEvent(QContextMenuEvent* event)
         // 在空白处显示右键菜单
         QMenu menu(this);
 
-        QAction* emptyAction1 = menu.addAction(tr("Create Point"));
-        QAction* emptyAction2 = menu.addAction(tr("Fit"));
-        QAction* emptyAction3 = menu.addAction(tr("Reset"));
+        QAction* createPointAction = menu.addAction(tr("Create Point"));
+        QAction* fitAction = menu.addAction(tr("Fit"));
+        QAction* resetAction = menu.addAction(tr("Reset"));
 
         QAction* selectedEmptyItem = menu.exec(globalPos);
 
         // 处理选中的菜单项
-        if (selectedEmptyItem == emptyAction1) {
+        if (selectedEmptyItem == createPointAction) {
             if (!m_mixArcLineItems)
             {
                 addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
             }
             m_mixArcLineItems->pushPoint(mapToScene(event->pos()), BMixArcLineItems::PointType::LineEdgeEnd);
         }
-        else if (selectedEmptyItem == emptyAction2) {
-            // 执行空白菜单项2 的操作
+        else if (selectedEmptyItem == fitAction) {
+            if (!m_mixArcLineItems)
+            {
+                addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
+            }
+            m_mixArcLineItems->fitByCenter();
+            QTimer::singleShot(10000, [=]() {
+                this->update();
+            });
         }
-        else if (selectedEmptyItem == emptyAction3) {
+        else if (selectedEmptyItem == resetAction) {
             // 执行空白菜单项3 的操作
         }
     }

@@ -437,6 +437,8 @@ public:
 
     void checkPointList();
 
+    void fitByCenter();
+
     QGraphicsItemGroup* getItemsGroup() { return m_Items; }
 
     QGraphicsItemGroup* getStartEndGroup()
