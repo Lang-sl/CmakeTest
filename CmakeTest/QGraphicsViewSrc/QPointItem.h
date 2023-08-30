@@ -30,8 +30,9 @@ public:
     QPointF getPoint() { return m_point; }
     void setPoint(QPointF p) { m_point = p; }
 
-    bool getConnectFocus() { return m_connectFocus; }
-    void setConnectFocus(bool b) { m_connectFocus = b; }
+signals:
+    void isFocusIn(BPointItem* item);
+    void isFocusOut(BPointItem* item);
 
 protected:
     virtual QRectF boundingRect() const override;
@@ -49,8 +50,6 @@ private:
     QPointF m_point;
     PointType m_type;
 
-    bool m_connectFocus;
-
     //friend class QGraphicsItemBasic;
     friend class BMixArcLineItems;
 };
@@ -58,11 +57,23 @@ private:
 //------------------------------------------------------------------------------
 
 // 存放点的容器
-class BPointItemList : public QList<BPointItem*>
+class BPointItemList : public QObject, public QList<BPointItem*>
 {
+    Q_OBJECT
 public:
     void setRandColor();
     void setColor(const QColor color);
     void setVisible(bool visible);
     QList<QPointF> getQPointFList();
+
+    void append(BPointItem* item)
+    {
+        QList<BPointItem*>::append(item);
+
+        // 发出自定义信号
+        emit itemAppended(item);
+    }
+
+signals:
+    void itemAppended(BPointItem* item);
 };

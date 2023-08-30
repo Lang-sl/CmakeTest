@@ -61,7 +61,8 @@ public:
     int getEdgeIndex(BPointItem* pointItem) const;
 
 
-    QList<QPointF> getPointList() { return m_pointList.getQPointFList(); }
+    QList<QPointF> getPointFList() { return m_pointList.getQPointFList(); }
+    BPointItemList* getPointList() { return &m_pointList; }
 
     ItemType getType() { return m_type; }
 

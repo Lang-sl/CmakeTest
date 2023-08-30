@@ -33,6 +33,7 @@ void QGraphicsViewBasic::addItem(QGraphicsItemBasic::ItemType itemType)
         m_scene->addItem(m_mixArcLineItems->getStartEndGroup());
         m_scene->addItem(m_mixArcLineItems);
         connect(m_mixArcLineItems, &BMixArcLineItems::groupChanged, this, &QGraphicsViewBasic::bindItemFocus);
+        connect(m_mixArcLineItems->getPointList(), &BPointItemList::itemAppended, this, &QGraphicsViewBasic::bindPointFocus);
         connect(m_scene, &QGraphicsSceneBasic::updatePoint, m_mixArcLineItems, &BMixArcLineItems::pushPoint);
     }
     //m_scene->addItem(item);
@@ -59,15 +60,22 @@ void QGraphicsViewBasic::clear()
     m_scene->addCoordinateSystem();
 }
 
-void QGraphicsViewBasic::itemIsFocusIn(QGraphicsItemBasic* i)
+void QGraphicsViewBasic::bindPointFocus(BPointItem* item)
 {
-    qDebug() << "view Focus In";
+    //qDebug() << "bind point";
+    connect(item, &BPointItem::isFocusIn, this, &QGraphicsViewBasic::itemIsFocusIn);
+    connect(item, &BPointItem::isFocusOut, this, &QGraphicsViewBasic::itemIsFocusOut);
+}
+
+void QGraphicsViewBasic::itemIsFocusIn(QAbstractGraphicsShapeItem* i)
+{
+    //qDebug() << "view Focus In";
     emit ItemFocusIn(i);
 }
 
-void QGraphicsViewBasic::itemIsFocusOut(QGraphicsItemBasic* i)
+void QGraphicsViewBasic::itemIsFocusOut(QAbstractGraphicsShapeItem* i)
 {
-    qDebug() << "view Focus Out";
+    //qDebug() << "view Focus Out";
     emit ItemFocusOut(i);
 }
 

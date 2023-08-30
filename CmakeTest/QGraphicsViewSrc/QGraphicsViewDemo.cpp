@@ -200,102 +200,114 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 //    m_scene->isShowColorItem(m_showColorItem);
 //}
 
-void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
+void QGraphicsViewDemo::on_itemFocusIn(QAbstractGraphicsShapeItem* i)
 {
     // 参数
     center_x->disconnect();
     center_y->disconnect();
     edge_x->disconnect();
     edge_y->disconnect();
-    QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(i);
-    QGraphicsItemBasic::ItemType itemType = item->getType();
-    switch (itemType) {
-    case QGraphicsItemBasic::ItemType::Ellipse: {
-        BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
-        updateConfig(ellipse);
-    } break;
-    case QGraphicsItemBasic::ItemType::Circle: {
-        BCircle* circle = dynamic_cast<BCircle*>(item);
-        updateConfig(circle);
-    } break;
-    case QGraphicsItemBasic::ItemType::Arc: {
-        BArc* pie = dynamic_cast<BArc*>(item);
-        updateConfig(pie);
-        connect(center_x, &QLineEdit::editingFinished, [=]()
-            {
-                pie->moveBy(center_x->text().toDouble() - pie->mapToScene(pie->getCenter()).x(), 0);
-                updateConfig(pie);
-            });
-        connect(center_y, &QLineEdit::editingFinished, [=]()
-            {
-                pie->moveBy(0, center_y->text().toDouble() - pie->mapToScene(pie->getCenter()).y());
-                updateConfig(pie);
-            });
-        connect(edge_x, &QLineEdit::editingFinished, [=]()
-            {
-                QPointF origin = pie->mapToScene(pie->getPointList()[0]);
-                QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
-                //pie->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(pie);
-            });
-        connect(edge_y, &QLineEdit::editingFinished, [=]()
-            {
-                QPointF origin = pie->mapToScene(pie->getPointList()[0]);
-                QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
-                //polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(pie);
-            });
-    } break;
-    case QGraphicsItemBasic::ItemType::Rectangle: {
-        BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
-        updateConfig(rectangle);
-    } break;
-    case QGraphicsItemBasic::ItemType::Square: {
-        BSquare* square = dynamic_cast<BSquare*>(item);
-        updateConfig(square);
-    } break;
-    case QGraphicsItemBasic::ItemType::Line: {
-        BLine* line = dynamic_cast<BLine*>(item);
-        updateConfig(line);
-    } break;
-    case QGraphicsItemBasic::ItemType::Point: {
-        BPoint* point = dynamic_cast<BPoint*>(item);
-        updateConfig(point);
-    } break;
-    case QGraphicsItemBasic::ItemType::Polygon: {
-        BPolygon* polygon = dynamic_cast<BPolygon*>(item);
-        updateConfig(polygon);
-        connect(center_x, &QLineEdit::editingFinished, [=]()
-            {
-                polygon->moveBy(center_x->text().toDouble() - polygon->mapToScene(polygon->getCenter()).x(), 0);
-                updateConfig(polygon);
-            });
-        connect(center_y, &QLineEdit::editingFinished, [=]()
-            {
-                polygon->moveBy(0, center_y->text().toDouble() - polygon->mapToScene(polygon->getCenter()).y());
-                updateConfig(polygon);
-            });
-        connect(edge_x, &QLineEdit::editingFinished, [=]() 
-            {
-                QPointF origin = polygon->mapToScene(polygon->getPointList()[0]);
-                QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
-                polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(polygon); 
-            });
-        connect(edge_y, &QLineEdit::editingFinished, [=]()
-            {
-                QPointF origin = polygon->mapToScene(polygon->getPointList()[0]);
-                QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
-                polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(polygon);
-            });
-    } break;
-    default: break;
+    QGraphicsItemBasic* item = dynamic_cast<QGraphicsItemBasic*>(i);
+    if (item != nullptr)
+    {
+        QGraphicsItemBasic::ItemType itemType = item->getType();
+        switch (itemType) {
+        case QGraphicsItemBasic::ItemType::Ellipse: {
+            BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
+            updateConfig(ellipse);
+        } break;
+        case QGraphicsItemBasic::ItemType::Circle: {
+            BCircle* circle = dynamic_cast<BCircle*>(item);
+            updateConfig(circle);
+        } break;
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(item);
+            updateConfig(pie);
+            connect(center_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        pie->moveBy(center_x->text().toDouble() - pie->mapToScene(pie->getCenter()).x(), 0);
+                        updateConfig(pie);
+                    });
+            connect(center_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        pie->moveBy(0, center_y->text().toDouble() - pie->mapToScene(pie->getCenter()).y());
+                        updateConfig(pie);
+                    });
+            connect(edge_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = pie->mapToScene(pie->getPointFList()[0]);
+                        QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
+                        //pie->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                        updateConfig(pie);
+                    });
+            connect(edge_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = pie->mapToScene(pie->getPointFList()[0]);
+                        QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
+                        //polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                        updateConfig(pie);
+                    });
+        } break;
+        case QGraphicsItemBasic::ItemType::Rectangle: {
+            BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
+            updateConfig(rectangle);
+        } break;
+        case QGraphicsItemBasic::ItemType::Square: {
+            BSquare* square = dynamic_cast<BSquare*>(item);
+            updateConfig(square);
+        } break;
+        case QGraphicsItemBasic::ItemType::Line: {
+            BLine* line = dynamic_cast<BLine*>(item);
+            updateConfig(line);
+        } break;
+        case QGraphicsItemBasic::ItemType::Point: {
+            BPoint* point = dynamic_cast<BPoint*>(item);
+            updateConfig(point);
+        } break;
+        case QGraphicsItemBasic::ItemType::Polygon: {
+            BPolygon* polygon = dynamic_cast<BPolygon*>(item);
+            updateConfig(polygon);
+            connect(center_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        polygon->moveBy(center_x->text().toDouble() - polygon->mapToScene(polygon->getCenter()).x(), 0);
+                        updateConfig(polygon);
+                    });
+            connect(center_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        polygon->moveBy(0, center_y->text().toDouble() - polygon->mapToScene(polygon->getCenter()).y());
+                        updateConfig(polygon);
+                    });
+            connect(edge_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = polygon->mapToScene(polygon->getPointFList()[0]);
+                        QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
+                        polygon->updatePolygon(polygon->getPointFList()[0], polygon->mapFromScene(end));
+                        updateConfig(polygon);
+                    });
+            connect(edge_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = polygon->mapToScene(polygon->getPointFList()[0]);
+                        QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
+                        polygon->updatePolygon(polygon->getPointFList()[0], polygon->mapFromScene(end));
+                        updateConfig(polygon);
+                    });
+        } break;
+        default: break;
+        }
+    }
+    BPointItem* pointItem = dynamic_cast<BPointItem*>(i);
+    if (pointItem != nullptr)
+    {
+        type->setText("顶点");
+        center_x->setText(QString::number(pointItem->getPoint().x()));
+        center_y->setText(QString::number(pointItem->getPoint().y()));
+        qDebug() << "选中顶点";
+        qDebug() << pointItem->getPoint();
     }
     rightNavigationDock->show();
 }
 
-void QGraphicsViewDemo::on_itemFocusOut(QGraphicsItemBasic* i)
+void QGraphicsViewDemo::on_itemFocusOut(QAbstractGraphicsShapeItem* i)
 {
     bool isFocus = false;
     QList<QWidget*> childWidgets = rightNavigationDock->findChildren<QWidget*>();
@@ -394,8 +406,8 @@ void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
         type->setText("多边形");
         center_x->setText(QString::number(polygon->mapToScene(polygon->getCenter()).x()));
         center_y->setText(QString::number(polygon->mapToScene(polygon->getCenter()).y()));
-        edge_x->setText(QString::number(polygon->mapToScene(polygon->getPointList()[0]).x()));
-        edge_y->setText(QString::number(polygon->mapToScene(polygon->getPointList()[0]).y()));
+        edge_x->setText(QString::number(polygon->mapToScene(polygon->getPointFList()[0]).x()));
+        edge_y->setText(QString::number(polygon->mapToScene(polygon->getPointFList()[0]).y()));
     } break;
     default: break;
     }

@@ -5,7 +5,6 @@ BPointItem::BPointItem(QAbstractGraphicsShapeItem* parent, QPointF p, PointType 
     : QAbstractGraphicsShapeItem(parent)
     , m_point(p)
     , m_type(type)
-    , m_connectFocus(false)
 {
     this->setPos(m_point);
     this->setFlags(QGraphicsItem::ItemIsSelectable |
@@ -183,11 +182,13 @@ void BPointItem::focusInEvent(QFocusEvent* event)
     }
     default: break;
     }
+    emit isFocusIn(this);
 }
 
 void BPointItem::focusOutEvent(QFocusEvent* event)
 {
     this->setBrush(NOSELECTCOLOR);
+    emit isFocusOut(this);
 }
 
 //------------------------------------------------------------------------------

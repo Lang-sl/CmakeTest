@@ -42,9 +42,9 @@ private slots:
 
     //void on_showColorItem_clicked();
 
-    void on_itemFocusIn(QGraphicsItemBasic* i);
+    void on_itemFocusIn(QAbstractGraphicsShapeItem* i);
 
-    void on_itemFocusOut(QGraphicsItemBasic* i);
+    void on_itemFocusOut(QAbstractGraphicsShapeItem* i);
 
     void setBtnEnabled(bool enable);
 

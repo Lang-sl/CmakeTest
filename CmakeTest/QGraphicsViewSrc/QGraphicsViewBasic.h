@@ -16,15 +16,16 @@ public:
     void clear();
 
 Q_SIGNALS:
-    void ItemFocusIn(QGraphicsItemBasic* i);
+    void ItemFocusIn(QAbstractGraphicsShapeItem* i);
 
-    void ItemFocusOut(QGraphicsItemBasic* i);
+    void ItemFocusOut(QAbstractGraphicsShapeItem* i);
 
 
 public slots:
     void bindItemFocus(QGraphicsItemGroup* group);
-    void itemIsFocusIn(QGraphicsItemBasic* i);
-    void itemIsFocusOut(QGraphicsItemBasic* i);
+    void bindPointFocus(BPointItem* point);
+    void itemIsFocusIn(QAbstractGraphicsShapeItem* i);
+    void itemIsFocusOut(QAbstractGraphicsShapeItem* i);
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
