@@ -5,6 +5,7 @@ BPointItem::BPointItem(QAbstractGraphicsShapeItem* parent, QPointF p, PointType 
     : QAbstractGraphicsShapeItem(parent)
     , m_point(p)
     , m_type(type)
+    , m_connectFocus(false)
 {
     this->setPos(m_point);
     this->setFlags(QGraphicsItem::ItemIsSelectable |
@@ -167,7 +168,7 @@ void BPointItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void BPointItem::focusInEvent(QFocusEvent* event)
 {
-    this->setBrush(QColor(255, 160, 0));
+    this->setBrush(ISSELECTCOLOR);
     QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(this->parentItem());
     QGraphicsItemBasic::ItemType itemType = item->getType();
     switch (itemType) {
@@ -185,7 +186,7 @@ void BPointItem::focusInEvent(QFocusEvent* event)
 
 void BPointItem::focusOutEvent(QFocusEvent* event)
 {
-    this->setBrush(QColor(220, 220, 220));
+    this->setBrush(NOSELECTCOLOR);
 }
 
 //------------------------------------------------------------------------------

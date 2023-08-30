@@ -30,6 +30,9 @@ public:
     QPointF getPoint() { return m_point; }
     void setPoint(QPointF p) { m_point = p; }
 
+    bool getConnectFocus() { return m_connectFocus; }
+    void setConnectFocus(bool b) { m_connectFocus = b; }
+
 protected:
     virtual QRectF boundingRect() const override;
 
@@ -45,6 +48,8 @@ protected:
 private:
     QPointF m_point;
     PointType m_type;
+
+    bool m_connectFocus;
 
     //friend class QGraphicsItemBasic;
     friend class BMixArcLineItems;

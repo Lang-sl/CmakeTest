@@ -20,6 +20,9 @@
 #define SELECTWIDTH 10 // 选中线框的宽度
 #define MIXRADIUS 10   // 混合线框默认半径
 
+#define NOSELECTCOLOR QColor(220, 220, 220)
+#define ISSELECTCOLOR QColor(255, 160, 0)
+
 // 自定义图元 - 基础类
 class QGraphicsItemBasic : public QObject, public QAbstractGraphicsShapeItem
 {
@@ -89,7 +92,7 @@ protected:
 
     BPointItemList m_pointList;
 
-    QPointF m_center;
+    mutable QPointF m_center;
     QPointF m_edge;         //确定边界用
     QList<QPointF> m_edges; //边上可拖拽点集合
 
@@ -237,7 +240,7 @@ private:
     mutable qreal m_endAngle;
     mutable qreal m_radius;
     bool m_addToGroup;
-    bool m_isConvex;
+    bool m_isAnticlockwise;
     QPointF m_origin;
     QPointF m_end;
     friend class BMixArcLineItems;

@@ -8,9 +8,9 @@
 QGraphicsItemBasic::QGraphicsItemBasic(ItemType type)
     : m_type(type), m_connectFocus(false)
 {
-    m_pen_noSelected.setColor(QColor(220, 220, 220));
+    m_pen_noSelected.setColor(NOSELECTCOLOR);
     m_pen_noSelected.setWidth(2);
-    m_pen_isSelected.setColor(QColor(255, 160, 0));
+    m_pen_isSelected.setColor(ISSELECTCOLOR);
     m_pen_isSelected.setWidth(2);
 
 
@@ -25,9 +25,9 @@ QGraphicsItemBasic::QGraphicsItemBasic(ItemType type)
 QGraphicsItemBasic::QGraphicsItemBasic(QPointF center, QPointF edge, QList<QPointF> edges, ItemType type)
     : m_center(center), m_edge(edge), m_edges(edges), m_type(type), m_connectFocus(false)
 {
-    m_pen_noSelected.setColor(QColor(220, 220, 220));
+    m_pen_noSelected.setColor(NOSELECTCOLOR);
     m_pen_noSelected.setWidth(2);
-    m_pen_isSelected.setColor(QColor(255, 160, 0));
+    m_pen_isSelected.setColor(ISSELECTCOLOR);
     m_pen_isSelected.setWidth(2);
 
 
@@ -413,7 +413,7 @@ BArc::BArc(QPointF origin, QPointF end, ItemType itemType, bool addToGroup)
     getArc(origin, end, m_radius);
     m_center = getCircleCenter(origin, end, m_radius);
     m_type = QGraphicsItemBasic::ItemType::Arc;
-    m_isConvex = true;
+    m_isAnticlockwise = true;
 
     this->setFlags(QGraphicsItem::ItemIsFocusable);
 }
@@ -527,6 +527,7 @@ QPainterPath BArc::getArc(QPointF origin, QPointF end, qreal& radius) const
     {
         m_startAngle = startAngle;
         m_endAngle = endAngle;
+        m_center = midpoint;
     }
 
     // 添加圆弧到路径
@@ -549,21 +550,10 @@ QPointF BArc::getCircleCenter(QPointF origin, QPointF end, qreal radius) const
     qreal vx = end.y() - origin.y();
     qreal vy = end.x() - origin.x();
 
-    if (m_isConvex)
-    {
-        // 计算垂直向量
-        if ( vy > 0 )
-            vy = -vy;
-        else
-            vx = -vx;
-    }
+    if (m_isAnticlockwise)
+        vy = -vy;
     else
-    {
-        if (vy > 0)
-            vx = -vx;
-        else
-            vy = -vy;
-    }
+        vx = -vx;
 
     // 计算圆心
     center.setX(midPoint.x() + h * vx / d);
@@ -614,7 +604,8 @@ void BArc::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
     {
         //painter->fillPath(shape(), QBrush(QColor(99, 184, 255)));
         painter->drawPath(getArc(m_origin, m_end, m_radius));
-        painter->drawPath(getArc(QPointF(- m_origin.x(), m_origin.y()), QPointF(- m_end.x(), m_end.y()), m_radius));
+        //painter->drawPath(getArc(QPointF(- m_origin.x(), m_origin.y()), QPointF(- m_end.x(), m_end.y()), m_radius));
+        painter->drawArc(QRectF(- m_center.x() - m_radius, m_center.y() - m_radius, 2 * m_radius, 2 * m_radius), (180 - m_startAngle) * 16, (m_startAngle - m_endAngle) * 16);
         return;
     }
 
@@ -1521,7 +1512,7 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
             m_pointList[m_pointList.size() - 1]->m_type = BPointItem::PointType::Center;*/
             //m_pointList.append(new BPointItem(this, m_center, BPointItem::PointType::Center));
             
-            m_pointList.setColor(QColor(220, 220, 220));
+            m_pointList.setColor(NOSELECTCOLOR);
             is_create_finished = true;
             //this->setItemPosInScene(m_center);
         }
@@ -1535,7 +1526,7 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
 
 
             //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(QColor(220, 220, 220));
+            m_pointList.setColor(NOSELECTCOLOR);
 
             m_center = getCentroid(list);
             getMaxLength();
@@ -1556,7 +1547,7 @@ void BMixArcLineItems::pushPoint(QPointF p, QList<QPointF> list, PointType point
             m_pointList.append(point);
 
             //m_itemedgePosInScene.append(point->pos());
-            m_pointList.setColor(QColor(220, 220, 220));
+            m_pointList.setColor(NOSELECTCOLOR);
 
             m_center = getCentroid(list);
             getMaxLength();
