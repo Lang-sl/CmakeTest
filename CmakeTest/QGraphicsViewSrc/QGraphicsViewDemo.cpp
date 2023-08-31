@@ -9,7 +9,7 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
 {
     //ui->setupUi(this);
     setWindowTitle(tr("¶þÎ¬»­°å"));
-    setFixedSize(1024, 768);
+    //setFixedSize(1024, 768);
 
     m_showColorItem = true;
     m_view = new QGraphicsViewBasic(this);

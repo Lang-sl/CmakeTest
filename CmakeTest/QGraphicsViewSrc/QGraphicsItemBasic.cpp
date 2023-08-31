@@ -413,7 +413,7 @@ BArc::BArc(QPointF origin, QPointF end, ItemType itemType, bool addToGroup)
     getArc(origin, end, m_radius);
     m_center = getCircleCenter(origin, end, m_radius);
     m_type = QGraphicsItemBasic::ItemType::Arc;
-    m_isAnticlockwise = true;
+    m_isAnticlockwise = false;
 
     this->setFlags(QGraphicsItem::ItemIsFocusable);
 }
@@ -1534,7 +1534,8 @@ void BMixArcLineItems::fitByCenter()
 
     for (BPointItem* point : m_pointList)
     {
-        point->m_point.setY(point->m_point.y() + dy);
+        //point->m_point.setY(point->m_point.y() + dy);
+        point->setPoint(QPointF(point->getPoint().x(), point->getPoint().y() + dy));
         point->update();
     }
 

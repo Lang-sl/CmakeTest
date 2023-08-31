@@ -21,6 +21,7 @@ QGraphicsViewBasic::QGraphicsViewBasic(QWidget* parent) : QGraphicsView(parent)
     m_scene = new QGraphicsSceneBasic(this);
     m_scene->setBackgroundBrush(QBrush("#F8F8FF"));
     this->setScene(m_scene);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
 void QGraphicsViewBasic::addItem(QGraphicsItemBasic::ItemType itemType)
@@ -101,6 +102,11 @@ void QGraphicsViewBasic::contextMenuEvent(QContextMenuEvent* event)
     QPoint globalPos = event->globalPos();
     QPointF scenePos = mapToScene(event->pos());
 
+    if (scenePos.x() < 0)
+    {
+        return;
+    }
+
     QGraphicsItem* item = scene()->itemAt(scenePos, transform());
     BMixArcLineItems* basicItem = dynamic_cast<BMixArcLineItems*>(item);
     if (basicItem) {
@@ -144,7 +150,7 @@ void QGraphicsViewBasic::contextMenuEvent(QContextMenuEvent* event)
             {
                 addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
             }
-            m_mixArcLineItems->pushPoint(mapToScene(event->pos()), BMixArcLineItems::PointType::LineEdgeEnd);
+            m_mixArcLineItems->pushPoint(scenePos, BMixArcLineItems::PointType::LineEdgeEnd);
         }
         else if (selectedEmptyItem == fitAction) {
             if (!m_mixArcLineItems)
@@ -152,9 +158,6 @@ void QGraphicsViewBasic::contextMenuEvent(QContextMenuEvent* event)
                 addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
             }
             m_mixArcLineItems->fitByCenter();
-            QTimer::singleShot(10000, [=]() {
-                this->update();
-            });
         }
         else if (selectedEmptyItem == resetAction) {
             // 执行空白菜单项3 的操作
