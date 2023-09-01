@@ -30,6 +30,10 @@ public:
     QPointF getPoint() { return m_point; }
     void setPoint(QPointF p) { m_point = p; }
 
+signals:
+    void isFocusIn(BPointItem* item);
+    void isFocusOut(BPointItem* item);
+
 protected:
     virtual QRectF boundingRect() const override;
 
@@ -42,7 +46,7 @@ protected:
     virtual void focusInEvent(QFocusEvent* event) override;
     virtual void focusOutEvent(QFocusEvent* event) override;
 
-public:
+private:
     QPointF m_point;
     PointType m_type;
 
@@ -53,11 +57,23 @@ public:
 //------------------------------------------------------------------------------
 
 // 存放点的容器
-class BPointItemList : public QList<BPointItem*>
+class BPointItemList : public QObject, public QList<BPointItem*>
 {
+    Q_OBJECT
 public:
     void setRandColor();
     void setColor(const QColor color);
     void setVisible(bool visible);
     QList<QPointF> getQPointFList();
+
+    void append(BPointItem* item)
+    {
+        QList<BPointItem*>::append(item);
+
+        // 发出自定义信号
+        emit itemAppended(item);
+    }
+
+signals:
+    void itemAppended(BPointItem* item);
 };

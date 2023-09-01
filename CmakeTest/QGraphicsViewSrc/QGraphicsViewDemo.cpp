@@ -9,13 +9,10 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
 {
     //ui->setupUi(this);
     setWindowTitle(tr("二维画板"));
-    setFixedSize(1024, 768);
+    //setFixedSize(1024, 768);
 
     m_showColorItem = true;
-    m_scene = new QGraphicsSceneBasic(this);
     m_view = new QGraphicsViewBasic(this);
-    m_scene->setBackgroundBrush(QBrush("#F8F8FF"));
-    m_view->setScene(m_scene);
     setCentralWidget(m_view);
 
     leftNavigationDock = new QDockWidget(tr("工具栏"), this);
@@ -105,6 +102,9 @@ QGraphicsViewDemo::QGraphicsViewDemo(QWidget* parent)
     connect(pieBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_pieBtn_clicked);
     connect(polygonBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_polygonBtn_clicked);
     connect(mixArcLineItemsBtn, &QPushButton::clicked, this, &QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked);
+
+    connect(m_view, &QGraphicsViewBasic::ItemFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_view, &QGraphicsViewBasic::ItemFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 QGraphicsViewDemo::~QGraphicsViewDemo()
@@ -115,7 +115,7 @@ QGraphicsViewDemo::~QGraphicsViewDemo()
 void QGraphicsViewDemo::on_circleBtn_clicked()
 {
     BCircle* m_circle = new BCircle(0, 0, 50, QGraphicsItemBasic::ItemType::Circle);
-    m_scene->addItem(m_circle);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Circle);
     connect(m_circle, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_circle, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -123,23 +123,23 @@ void QGraphicsViewDemo::on_circleBtn_clicked()
 void QGraphicsViewDemo::on_ellipseBtn_clicked()
 {
     BEllipse* m_ellipse = new BEllipse(0, 0, 120, 80, QGraphicsItemBasic::ItemType::Ellipse);
-    m_scene->addItem(m_ellipse);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Ellipse);
     connect(m_ellipse, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_ellipse, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_pieBtn_clicked()
 {
-    BPie* m_pie = new BPie(0, 0, 80, -30, 30, QGraphicsItemBasic::ItemType::Pie);
-    m_scene->addItem(m_pie);
-    connect(m_pie, &BPie::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_pie, &BPie::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
+    BArc* m_pie = new BArc(0, 0, 80, -30, 30, QGraphicsItemBasic::ItemType::Arc);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Arc);
+    connect(m_pie, &BArc::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_pie, &BArc::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_squareBtn_clicked()
 {
     BSquare* m_square = new BSquare(0, 0, 60, QGraphicsItemBasic::ItemType::Square);
-    m_scene->addItem(m_square);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Square);
     connect(m_square, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_square, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -147,23 +147,20 @@ void QGraphicsViewDemo::on_squareBtn_clicked()
 void QGraphicsViewDemo::on_rectangleBtn_clicked()
 {
     BRectangle* m_rectangle = new BRectangle(0, 0, 80, 60, QGraphicsItemBasic::ItemType::Rectangle);
-    m_scene->addItem(m_rectangle);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Rectangle);
     connect(m_rectangle, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_rectangle, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_clearBtn_clicked()
 {
-    m_scene->clear();
-    m_scene->addCoordinateSystem();
-    /*m_scene->addColorItem();
-    m_scene->isShowColorItem(m_showColorItem);*/
+    m_view->clear();
 }
 
 void QGraphicsViewDemo::on_lineBtn_clicked()
 {
     BLine* m_line = new BLine( QPointF(0,0), QPointF(100,100), QGraphicsItemBasic::ItemType::Line);
-    m_scene->addItem(m_line);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Line);
     connect(m_line, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_line, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
@@ -171,40 +168,31 @@ void QGraphicsViewDemo::on_lineBtn_clicked()
 void QGraphicsViewDemo::on_pointBtn_clicked()
 {
     BPoint* m_point = new BPoint(QPointF(0, 0), QGraphicsItemBasic::ItemType::Point);
-    m_scene->addItem(m_point);
+    m_view->addItem(QGraphicsItemBasic::ItemType::Point);
     connect(m_point, &QGraphicsItemBasic::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_point, &QGraphicsItemBasic::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 }
 
 void QGraphicsViewDemo::on_polygonBtn_clicked()
 {
-    m_scene->startCreateBPolygon();
+    /*m_view->startCreateBPolygon();
     setBtnEnabled(false);
     BPolygon* m_polygon = new BPolygon(QGraphicsItemBasic::ItemType::Polygon);
-    m_scene->addItem(m_polygon);
+    m_view->addItem(m_polygon);
 
     connect(m_polygon, &BPolygon::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
     connect(m_polygon, &BPolygon::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
 
-    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, bool)), m_polygon, SLOT(pushPoint(QPointF, QList<QPointF>, bool)));
-    connect(m_scene, &QGraphicsSceneBasic::createBPolygonFinished, [=]() { setBtnEnabled(true); });
+    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, bool)), m_polygon, SLOT(pushPoint(QPointF, QList<QPointF>, bool)));*/
 }
 
 void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 {
-    m_scene->startCreateBMixArcLineItems();
     //setBtnEnabled(false);
-    BMixArcLineItems* m_mixArcLineItems = new BMixArcLineItems(QGraphicsItemBasic::ItemType::MixArcLineItems);
-    m_scene->addItem(m_mixArcLineItems);
+    m_view->addItem(QGraphicsItemBasic::ItemType::MixArcLineItems);
 
-    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
-    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);
-
-    connect(m_scene, SIGNAL(updatePoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)), m_mixArcLineItems, SLOT(pushPoint(QPointF, QList<QPointF>, BMixArcLineItems::PointType)));
-    connect(m_scene, &QGraphicsSceneBasic::createBMixArcLineItemsFinished, [=]() 
-        { 
-            //setBtnEnabled(true); 
-        });
+    /*connect(m_mixArcLineItems, &BMixArcLineItems::isFocusIn, this, &QGraphicsViewDemo::on_itemFocusIn);
+    connect(m_mixArcLineItems, &BMixArcLineItems::isFocusOut, this, &QGraphicsViewDemo::on_itemFocusOut);*/
 }
 
 //void QGraphicsViewDemo::on_showColorItem_clicked()
@@ -213,102 +201,114 @@ void QGraphicsViewDemo::on_mixArcLineItemsBtn_clicked()
 //    m_scene->isShowColorItem(m_showColorItem);
 //}
 
-void QGraphicsViewDemo::on_itemFocusIn(QGraphicsItemBasic* i)
+void QGraphicsViewDemo::on_itemFocusIn(QAbstractGraphicsShapeItem* i)
 {
     // 参数
     center_x->disconnect();
     center_y->disconnect();
     edge_x->disconnect();
     edge_y->disconnect();
-    QGraphicsItemBasic* item = static_cast<QGraphicsItemBasic*>(i);
-    QGraphicsItemBasic::ItemType itemType = item->getType();
-    switch (itemType) {
-    case QGraphicsItemBasic::ItemType::Ellipse: {
-        BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
-        updateConfig(ellipse);
-    } break;
-    case QGraphicsItemBasic::ItemType::Circle: {
-        BCircle* circle = dynamic_cast<BCircle*>(item);
-        updateConfig(circle);
-    } break;
-    case QGraphicsItemBasic::ItemType::Pie: {
-        BPie* pie = dynamic_cast<BPie*>(item);
-        updateConfig(pie);
-        connect(center_x, &QLineEdit::editingFinished, [=]()
-            {
-                pie->moveBy(center_x->text().toDouble() - pie->mapToScene(pie->getCenter()).x(), 0);
-                updateConfig(pie);
-            });
-        connect(center_y, &QLineEdit::editingFinished, [=]()
-            {
-                pie->moveBy(0, center_y->text().toDouble() - pie->mapToScene(pie->getCenter()).y());
-                updateConfig(pie);
-            });
-        connect(edge_x, &QLineEdit::editingFinished, [=]()
-            {
-                QPointF origin = pie->mapToScene(pie->getPointList()[0]);
-                QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
-                //pie->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(pie);
-            });
-        connect(edge_y, &QLineEdit::editingFinished, [=]()
-            {
-                QPointF origin = pie->mapToScene(pie->getPointList()[0]);
-                QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
-                //polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(pie);
-            });
-    } break;
-    case QGraphicsItemBasic::ItemType::Rectangle: {
-        BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
-        updateConfig(rectangle);
-    } break;
-    case QGraphicsItemBasic::ItemType::Square: {
-        BSquare* square = dynamic_cast<BSquare*>(item);
-        updateConfig(square);
-    } break;
-    case QGraphicsItemBasic::ItemType::Line: {
-        BLine* line = dynamic_cast<BLine*>(item);
-        updateConfig(line);
-    } break;
-    case QGraphicsItemBasic::ItemType::Point: {
-        BPoint* point = dynamic_cast<BPoint*>(item);
-        updateConfig(point);
-    } break;
-    case QGraphicsItemBasic::ItemType::Polygon: {
-        BPolygon* polygon = dynamic_cast<BPolygon*>(item);
-        updateConfig(polygon);
-        connect(center_x, &QLineEdit::editingFinished, [=]()
-            {
-                polygon->moveBy(center_x->text().toDouble() - polygon->mapToScene(polygon->getCenter()).x(), 0);
-                updateConfig(polygon);
-            });
-        connect(center_y, &QLineEdit::editingFinished, [=]()
-            {
-                polygon->moveBy(0, center_y->text().toDouble() - polygon->mapToScene(polygon->getCenter()).y());
-                updateConfig(polygon);
-            });
-        connect(edge_x, &QLineEdit::editingFinished, [=]() 
-            {
-                QPointF origin = polygon->mapToScene(polygon->getPointList()[0]);
-                QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
-                polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(polygon); 
-            });
-        connect(edge_y, &QLineEdit::editingFinished, [=]()
-            {
-                QPointF origin = polygon->mapToScene(polygon->getPointList()[0]);
-                QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
-                polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
-                updateConfig(polygon);
-            });
-    } break;
-    default: break;
+    QGraphicsItemBasic* item = dynamic_cast<QGraphicsItemBasic*>(i);
+    if (item != nullptr)
+    {
+        QGraphicsItemBasic::ItemType itemType = item->getType();
+        switch (itemType) {
+        case QGraphicsItemBasic::ItemType::Ellipse: {
+            BEllipse* ellipse = dynamic_cast<BEllipse*>(item);
+            updateConfig(ellipse);
+        } break;
+        case QGraphicsItemBasic::ItemType::Circle: {
+            BCircle* circle = dynamic_cast<BCircle*>(item);
+            updateConfig(circle);
+        } break;
+        case QGraphicsItemBasic::ItemType::Arc: {
+            BArc* pie = dynamic_cast<BArc*>(item);
+            updateConfig(pie);
+            connect(center_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        pie->moveBy(center_x->text().toDouble() - pie->mapToScene(pie->getCenter()).x(), 0);
+                        updateConfig(pie);
+                    });
+            connect(center_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        pie->moveBy(0, center_y->text().toDouble() - pie->mapToScene(pie->getCenter()).y());
+                        updateConfig(pie);
+                    });
+            connect(edge_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = pie->mapToScene(pie->getPointFList()[0]);
+                        QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
+                        //pie->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                        updateConfig(pie);
+                    });
+            connect(edge_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = pie->mapToScene(pie->getPointFList()[0]);
+                        QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
+                        //polygon->updatePolygon(polygon->getPointList()[0], polygon->mapFromScene(end));
+                        updateConfig(pie);
+                    });
+        } break;
+        case QGraphicsItemBasic::ItemType::Rectangle: {
+            BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
+            updateConfig(rectangle);
+        } break;
+        case QGraphicsItemBasic::ItemType::Square: {
+            BSquare* square = dynamic_cast<BSquare*>(item);
+            updateConfig(square);
+        } break;
+        case QGraphicsItemBasic::ItemType::Line: {
+            BLine* line = dynamic_cast<BLine*>(item);
+            updateConfig(line);
+        } break;
+        case QGraphicsItemBasic::ItemType::Point: {
+            BPoint* point = dynamic_cast<BPoint*>(item);
+            updateConfig(point);
+        } break;
+        case QGraphicsItemBasic::ItemType::Polygon: {
+            BPolygon* polygon = dynamic_cast<BPolygon*>(item);
+            updateConfig(polygon);
+            connect(center_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        polygon->moveBy(center_x->text().toDouble() - polygon->mapToScene(polygon->getCenter()).x(), 0);
+                        updateConfig(polygon);
+                    });
+            connect(center_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        polygon->moveBy(0, center_y->text().toDouble() - polygon->mapToScene(polygon->getCenter()).y());
+                        updateConfig(polygon);
+                    });
+            connect(edge_x, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = polygon->mapToScene(polygon->getPointFList()[0]);
+                        QPointF end = QPointF(edge_x->text().toDouble(), origin.y());
+                        polygon->updatePolygon(polygon->getPointFList()[0], polygon->mapFromScene(end));
+                        updateConfig(polygon);
+                    });
+            connect(edge_y, &QLineEdit::editingFinished, [=]()
+                    {
+                        QPointF origin = polygon->mapToScene(polygon->getPointFList()[0]);
+                        QPointF end = QPointF(origin.x(), edge_y->text().toDouble());
+                        polygon->updatePolygon(polygon->getPointFList()[0], polygon->mapFromScene(end));
+                        updateConfig(polygon);
+                    });
+        } break;
+        default: break;
+        }
+    }
+    BPointItem* pointItem = dynamic_cast<BPointItem*>(i);
+    if (pointItem != nullptr)
+    {
+        type->setText("顶点");
+        center_x->setText(QString::number(pointItem->getPoint().x()));
+        center_y->setText(QString::number(pointItem->getPoint().y()));
+        qDebug() << "选中顶点";
+        qDebug() << pointItem->getPoint();
     }
     rightNavigationDock->show();
 }
 
-void QGraphicsViewDemo::on_itemFocusOut(QGraphicsItemBasic* i)
+void QGraphicsViewDemo::on_itemFocusOut(QAbstractGraphicsShapeItem* i)
 {
     bool isFocus = false;
     QList<QWidget*> childWidgets = rightNavigationDock->findChildren<QWidget*>();
@@ -362,13 +362,13 @@ void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
         //edge_x->setText(QString::number(circle->getItemedgePosInScene().x()));
         //edge_y->setText(QString::number(circle->getItemedgePosInScene().y()));
     } break;
-    case QGraphicsItemBasic::ItemType::Pie: {
-        BPie* pie = dynamic_cast<BPie*>(item);
+    case QGraphicsItemBasic::ItemType::Arc: {
+        BArc* pie = dynamic_cast<BArc*>(item);
         type->setText("圆弧");
-        center_x->setText(QString::number(pie->mapToScene(pie->getCenter()).x()));
+        /*center_x->setText(QString::number(pie->mapToScene(pie->getCenter()).x()));
         center_y->setText(QString::number(pie->mapToScene(pie->getCenter()).y()));
         edge_x->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).x()));
-        edge_y->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).y()));
+        edge_y->setText(QString::number(pie->mapToScene(pie->getPointList()[0]).y()));*/
     } break;
     case QGraphicsItemBasic::ItemType::Rectangle: {
         BRectangle* rectangle = dynamic_cast<BRectangle*>(item);
@@ -407,8 +407,8 @@ void QGraphicsViewDemo::updateConfig(QGraphicsItemBasic* i)
         type->setText("多边形");
         center_x->setText(QString::number(polygon->mapToScene(polygon->getCenter()).x()));
         center_y->setText(QString::number(polygon->mapToScene(polygon->getCenter()).y()));
-        edge_x->setText(QString::number(polygon->mapToScene(polygon->getPointList()[0]).x()));
-        edge_y->setText(QString::number(polygon->mapToScene(polygon->getPointList()[0]).y()));
+        edge_x->setText(QString::number(polygon->mapToScene(polygon->getPointFList()[0]).x()));
+        edge_y->setText(QString::number(polygon->mapToScene(polygon->getPointFList()[0]).y()));
     } break;
     default: break;
     }

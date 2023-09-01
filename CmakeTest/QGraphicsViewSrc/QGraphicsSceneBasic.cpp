@@ -16,13 +16,11 @@ QGraphicsSceneBasic::QGraphicsSceneBasic(QObject* parent) : QGraphicsScene(paren
 void QGraphicsSceneBasic::startCreateBPolygon()
 {
     is_creating_BPolygon = true;
-    m_list.clear();
 }
 
 void QGraphicsSceneBasic::startCreateBMixArcLineItems()
 {
     is_creating_BMixArcLineItems = true;
-    m_list.clear();
 }
 
 void QGraphicsSceneBasic::addColorItem()
@@ -59,7 +57,7 @@ void QGraphicsSceneBasic::isShowColorItem(bool b)
 
 void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-    if (is_creating_BPolygon) {
+    /*if (is_creating_BPolygon) {
         QPointF p(event->scenePos().x(), event->scenePos().y());
 
         switch (event->buttons())
@@ -78,8 +76,8 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
         } break;
         default: break;
         }
-    }
-    else if (is_creating_BMixArcLineItems)
+    }*/
+    if (is_creating_BMixArcLineItems)
     {
         QPointF p(event->scenePos().x(), event->scenePos().y());
 
@@ -91,19 +89,15 @@ void QGraphicsSceneBasic::mousePressEvent(QGraphicsSceneMouseEvent* event)
                 emit pointIllegal();
                 return;
             }
-            m_list.push_back(p);
             if (!ArcOrLine)
-                emit updatePoint(p, m_list, BMixArcLineItems::PointType::LineEdgeEnd);
+                emit updatePoint(p, BMixArcLineItems::PointType::LineEdgeEnd);
             else
-                emit updatePoint(p, m_list, BMixArcLineItems::PointType::ArcEdgeEnd);
+                emit updatePoint(p, BMixArcLineItems::PointType::ArcEdgeEnd);
         } break;
         case Qt::RightButton: {
-            if (m_list.size() >= 3) {
-                emit updatePoint(p, m_list, BMixArcLineItems::PointType::Center);
-                emit createBMixArcLineItemsFinished();
-                is_creating_BMixArcLineItems = false;
-                m_list.clear();
-            }
+            emit updatePoint(p, BMixArcLineItems::PointType::Center);
+            emit createBMixArcLineItemsFinished();
+            is_creating_BMixArcLineItems = false;
         } break;
         default: break;
         }
