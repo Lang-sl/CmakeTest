@@ -6,15 +6,19 @@
 
 使用vs使用Cmake构建Qt项目测试
 
-主要包括`src`文件夹中的`CADDemo`以及`QGraphicsViewSrc`文件夹中的`GraphicsViewDemo`
+#### 包括
+
+`CADDemo`(Deprecated) in `src`
+
+`GraphicsViewDemo`(now update in caxbase) in `QGraphicsViewSrc`
 
 ### 构建流程
 
 #### 命令行
 
-在CmakeTest文件夹下执行
+在`CmakeTest`文件夹下执行
 
-`cmake -S . -B build -D Qt5_DIR=D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5`（注意修改路径，或者修改主目录下的CMakeLists.txt文件中的Qt5_DIR路径）
+`cmake -S . -B build -D Qt5_DIR=D:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5`（注意修改路径，或者修改`CMakeLists.txt`文件中的`Qt5_DIR`路径）
 
 生成build文件夹，继续编译执行
 
